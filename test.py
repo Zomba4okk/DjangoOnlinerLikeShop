@@ -1,7 +1,7 @@
 import decimal
 
 class A:
-    pass
+    pass # def
 
 class b_abc:
     pass # abc
