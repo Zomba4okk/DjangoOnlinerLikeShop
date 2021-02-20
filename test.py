@@ -1,5 +1,6 @@
 class A:
-    pass # def
+    pass
+
 
 class b_abc:
-    pass # abc
+    pass
