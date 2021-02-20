@@ -1,5 +1,3 @@
-import decimal
-
 class A:
     pass # def
 
