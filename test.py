@@ -1,3 +1,5 @@
+import decimal
+
 class A:
     pass
 
