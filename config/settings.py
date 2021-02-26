@@ -80,11 +80,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'onliner_db',
-        'USER': 'onliner_user',
-        'PASSWORD': 'onliner_password',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': env('db_name'),
+        'USER': env('db_user'),
+        'PASSWORD': env('db_password'),
+        'HOST': env('db_server_host'),
+        'PORT': env('db_server_port'),
     }
 }
 
