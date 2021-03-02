@@ -10,8 +10,11 @@ class GetNewAuthToken(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
 
-        ExpiringToken.objects.select_related('user').filter(user=user).delete()
+        token, created = ExpiringToken.objects.get_or_create(user=user)
 
-        token = ExpiringToken.objects.create(user=user)
+        if not created:
+            if token.expired():
+                token.delete()
+                token = ExpiringToken.objects.create(user=user)
 
         return Response({'token': token.key})
