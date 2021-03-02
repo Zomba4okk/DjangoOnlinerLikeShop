@@ -1,3 +1,17 @@
-from django.shortcuts import render  # noqa
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.response import Response
 
-# Create your views here.
+from .models import ExpiringToken
+
+
+class GetNewAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+
+        ExpiringToken.objects.select_related('user').filter(user=user).delete()
+
+        token = ExpiringToken.objects.create(user=user)
+
+        return Response({'token': token.key})
