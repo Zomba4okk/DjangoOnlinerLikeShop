@@ -1,9 +1,14 @@
+from datetime import (
+    datetime,
+)
+
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin
 )
 from django.db import models
+from rest_framework.authtoken.models import Token
 
 
 ACCOUNT_TYPE_STANDART = 'standart'
@@ -55,11 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     account_type = models.CharField(choices=ACCOUNT_TYPE_CHOISES,
                                     max_length=32)
     registration_date = models.DateTimeField('registration date',
-                                       auto_now_add=True)
-
-    @property
-    def is_admin(self):
-        return self.account_type == ACCOUNT_TYPE_ADMIN
+                                             auto_now_add=True)
 
     @property
     def is_staff(self):
@@ -80,3 +81,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = EMAIL_FIELD
     REQUIRED_FIELDS = []
+
+
+class ExpiringToken(Token):
+    #                               d    h    m    s
+    expiration_period_in_seconds = 30 * 24 * 60 * 60
+
+    def expired(self):
+        return (datetime.now() - self.created.date()).total_seconds() \
+               >= self.expiration_period_in_seconds
