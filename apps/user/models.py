@@ -1,13 +1,11 @@
-from datetime import (
-    datetime,
-)
-
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin
 )
 from django.db import models
+from django.utils import timezone
+
 from rest_framework.authtoken.models import Token
 
 
@@ -88,5 +86,5 @@ class ExpiringToken(Token):
     expiration_period_in_seconds = 30 * 24 * 60 * 60
 
     def expired(self):
-        return (datetime.now() - self.created.date()).total_seconds() \
+        return (timezone.now() - self.created).total_seconds() \
                >= self.expiration_period_in_seconds
