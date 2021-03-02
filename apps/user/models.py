@@ -45,12 +45,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = 'user'
         verbose_name_plural = 'users'
 
+    objects = UserManager()
+
+    is_superuser = False
+
     email = models.EmailField('email address', unique=True)
     is_active = models.BooleanField('is active', default=False)
     is_deleted = models.BooleanField('is deleted', default=False)
     account_type = models.CharField(choices=ACCOUNT_TYPE_CHOISES,
                                     max_length=32)
-    date_joined = models.DateTimeField('registration date',
+    registration_date = models.DateTimeField('registration date',
                                        auto_now_add=True)
 
     @property
@@ -61,11 +65,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         return self.account_type == ACCOUNT_TYPE_ADMIN
 
-    @property
-    def is_superuser(self):
-        return self.account_type == ACCOUNT_TYPE_ADMIN
+    def has_perm(self, perm: str, obj=None) -> bool:
+        if self.account_type == ACCOUNT_TYPE_ADMIN:
+            return True
 
-    objects = UserManager()
+        return super().has_perm(perm, obj)
+
+    def has_module_perms(self, app_label: str) -> bool:
+        if self.account_type == ACCOUNT_TYPE_ADMIN:
+            return True
+
+        return super().has_module_perms(app_label)
 
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = EMAIL_FIELD
