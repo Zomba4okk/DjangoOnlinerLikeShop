@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .models import ExpiringToken
 
 
-class GetNewAuthToken(ObtainAuthToken):
+class ObtainExpiringAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

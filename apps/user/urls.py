@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import GetNewAuthToken
+from .views import ObtainExpiringAuthToken
 
 urlpatterns = [
-    path('login/', GetNewAuthToken.as_view())
+    path('login/', ObtainExpiringAuthToken.as_view())
 ]
