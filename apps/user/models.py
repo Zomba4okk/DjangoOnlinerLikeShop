@@ -9,11 +9,11 @@ from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
 
-ACCOUNT_TYPE_STANDART = 'standart'
+ACCOUNT_TYPE_STANDART = 'standard'
 ACCOUNT_TYPE_MODERATOR = 'moderator'
 ACCOUNT_TYPE_ADMIN = 'admin'
 ACCOUNT_TYPE_CHOISES = [
-    (ACCOUNT_TYPE_STANDART, 'Standart user'),
+    (ACCOUNT_TYPE_STANDART, 'Standard user'),
     (ACCOUNT_TYPE_MODERATOR, 'Moderator'),
     (ACCOUNT_TYPE_ADMIN, 'Admin'),
 ]
