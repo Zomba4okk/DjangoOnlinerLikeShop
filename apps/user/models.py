@@ -18,6 +18,22 @@ ACCOUNT_TYPE_CHOISES = [
     (ACCOUNT_TYPE_ADMIN, 'Admin'),
 ]
 
+SEX_M = 'm'
+SEX_F = 'f'
+SEX_CHOISES = [
+    (SEX_M, 'Male'),
+    (SEX_F, 'Female'),
+]
+
+
+class ExpiringToken(Token):
+    #                               d    h    m    s
+    expiration_period_in_seconds = 30 * 24 * 60 * 60
+
+    def expired(self):
+        return (timezone.now() - self.created).total_seconds() \
+               >= self.expiration_period_in_seconds
+
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -81,10 +97,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
 
-class ExpiringToken(Token):
-    #                               d    h    m    s
-    expiration_period_in_seconds = 30 * 24 * 60 * 60
+class UserProfile(models.Model):
+    user = models.OneToOneField(to=User, on_delete=models.CASCADE)
 
-    def expired(self):
-        return (timezone.now() - self.created).total_seconds() \
-               >= self.expiration_period_in_seconds
+    phone_number = models.CharField(max_length=16, null=True, blank=True)
+    first_name = models.CharField(max_length=32, null=True, blank=True)
+    last_name = models.CharField(max_length=32, null=True, blank=True)
+    middle_name = models.CharField(max_length=32, null=True, blank=True)
+    address = models.CharField(max_length=150, null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    sex = models.CharField(max_length=1, choices=SEX_CHOISES,
+                           null=True, blank=True)
+    # avatar = models.ImageField(
+    #     upload_to='/media/user_avatars/', null=True, blank=True
+    # )
