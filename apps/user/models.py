@@ -1,7 +1,6 @@
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
-    PermissionsMixin
 )
 from django.db import models
 from django.utils import timezone
@@ -59,14 +58,12 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **kwargs)
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser):
     class Meta:
         verbose_name = 'user'
         verbose_name_plural = 'users'
 
     objects = UserManager()
-
-    is_superuser = False
 
     email = models.EmailField('email address', unique=True)
     is_active = models.BooleanField('is active', default=False)
@@ -80,17 +77,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         return self.account_type == ACCOUNT_TYPE_ADMIN
 
-    def has_perm(self, perm: str, obj=None) -> bool:
-        if self.account_type == ACCOUNT_TYPE_ADMIN:
-            return True
+    def has_module_perms(self, *args, **kwargs):
+        return self.account_type == ACCOUNT_TYPE_ADMIN
 
-        return super().has_perm(perm, obj)
-
-    def has_module_perms(self, app_label: str) -> bool:
-        if self.account_type == ACCOUNT_TYPE_ADMIN:
-            return True
-
-        return super().has_module_perms(app_label)
+    def has_perm(self, *args, **kwargs):
+        return self.account_type == ACCOUNT_TYPE_ADMIN
 
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = EMAIL_FIELD
