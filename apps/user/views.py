@@ -4,7 +4,8 @@ from rest_framework.response import Response
 
 from .models import (
     ExpiringToken,
-    User, UserProfile,
+    User,
+    UserProfile,
 )
 from .serializers import (
     RegistrationSerializer,
@@ -31,12 +32,14 @@ class Register(APIView):
     def post(self, request, *args, **kwargs):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer_data = serializer.data
+
+        user_data = serializer.data['user']
+        user_profile_data = serializer.data['user_profile']
 
         user = User.objects.create_user(
-            serializer_data.pop('email'),
-            serializer_data.pop('password')
+            user_data['email'],
+            user_data['password']
         )
-        UserProfile(user=user, **serializer_data).save()
+        UserProfile(user=user, **user_profile_data).save()
 
-        return Response()
+        return Response('Registered')
