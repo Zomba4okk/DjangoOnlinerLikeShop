@@ -6,12 +6,6 @@ from .models import (
 )
 
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('email', 'password')
-
-
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
@@ -19,6 +13,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
                   'middle_name', 'address', 'birth_date', 'sex')
 
 
-class RegistrationSerializer(serializers.Serializer):
-    user = UserRegistrationSerializer()
-    user_profile = UserProfileSerializer()
+class RegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'password', 'user_profile')
+
+    user_profile = UserProfileSerializer(allow_null=True, required=False)

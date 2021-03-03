@@ -33,12 +33,11 @@ class Register(APIView):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user_data = serializer.data['user']
-        user_profile_data = serializer.data['user_profile']
+        user_profile_data = serializer.data['user_profile'] or {}
 
         user = User.objects.create_user(
-            user_data['email'],
-            user_data['password']
+            serializer.data['email'],
+            serializer.data['password']
         )
         UserProfile(user=user, **user_profile_data).save()
 
