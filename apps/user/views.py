@@ -1,3 +1,6 @@
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
 from rest_framework.views import APIView
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
@@ -31,14 +34,23 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
 class Register(APIView):
     def post(self, request, *args, **kwargs):
         serializer = RegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        user_profile_data = serializer.data['user_profile'] or {}
+        if not serializer.is_valid():
+            return Response(serializer.error_messages, status=400)
 
         user = User.objects.create_user(
             serializer.data['email'],
-            serializer.data['password']
+            serializer.data['password'],
+            save=False
         )
-        UserProfile(user=user, **user_profile_data).save()
+
+        try:
+            validate_password(serializer.data['password'], user)
+        except ValidationError as e:
+            return Response({"password_validation_errors": e}, status=400)
+
+        user.save()
+
+        user_profile_data = serializer.data['user_profile'] or {}
+        UserProfile(user=user, **(user_profile_data)).save()
 
         return Response('Registered')
