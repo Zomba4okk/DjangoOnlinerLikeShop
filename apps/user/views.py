@@ -22,8 +22,8 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
 
         if not created:
             if token.expired():
-                token.delete()
-                token = ExpiringToken.objects.create(user=user)
+                token.update()
+                token.save()
 
         return Response({'token': token.key})
 
