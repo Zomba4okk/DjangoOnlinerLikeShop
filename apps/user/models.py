@@ -8,11 +8,11 @@ from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
 
-ACCOUNT_TYPE_STANDART = 'standard'
+ACCOUNT_TYPE_STANDARD = 'standard'
 ACCOUNT_TYPE_MODERATOR = 'moderator'
 ACCOUNT_TYPE_ADMIN = 'admin'
 ACCOUNT_TYPE_CHOISES = [
-    (ACCOUNT_TYPE_STANDART, 'Standard user'),
+    (ACCOUNT_TYPE_STANDARD, 'Standard user'),
     (ACCOUNT_TYPE_MODERATOR, 'Moderator'),
     (ACCOUNT_TYPE_ADMIN, 'Admin'),
 ]
@@ -55,7 +55,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user(self, email, password, **kwargs):
-        kwargs.setdefault('account_type', ACCOUNT_TYPE_STANDART)
+        kwargs.setdefault('account_type', ACCOUNT_TYPE_STANDARD)
         return self._create_user(email, password, **kwargs)
 
     def create_superuser(self, email, password, **kwargs):
