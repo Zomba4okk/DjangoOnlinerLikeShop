@@ -6,17 +6,16 @@
 
 
 import base64
-from datetime import datetime
 import re
+from datetime import datetime
 from typing import Tuple, Union
 
+from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
-from cryptography.fernet import Fernet
-
 import environ
-
+from cryptography.fernet import Fernet
 
 env = environ.Env()
 
@@ -87,7 +86,8 @@ def decode_token(encrypted_token: str) -> Tuple[Union[int, None], bool]:
 def send_activation_email(user):
     send_mail(
         'Account activation',
-        f'Activation link: {get_encrypted_token_string(user.id)}',
+        f'Activation link: {settings.USER_ACTIVATION_URI}'
+        f'{get_encrypted_token_string(user.id)}',
         env('EMAIL_ADDRESS'),
         [user.email]
     )

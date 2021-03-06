@@ -113,6 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'user.User'
 AUTHENTICATION_BACKENDS = ['apps.user.backends.AuthBackend']
+USER_ACTIVATION_URI = 'http://localhost:8000/user/activate/'
 
 EMAIL_HOST = 'smtp.mail.ru'
 EMAIL_PORT = '465'
