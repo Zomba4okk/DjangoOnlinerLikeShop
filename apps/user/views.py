@@ -26,7 +26,7 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
         user = serializer.validated_data['user']
 
         if not user.is_active:
-            # send email
+            send_activation_email(user)
             return Response('User inactive')
 
         token, created = ExpiringToken.objects.get_or_create(user=user)

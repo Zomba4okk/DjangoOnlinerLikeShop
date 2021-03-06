@@ -10,7 +10,7 @@ from datetime import datetime
 import re
 from typing import Tuple, Union
 
-from django.core.mail import send_mail  # noqa
+from django.core.mail import send_mail
 from django.utils import timezone
 
 from cryptography.fernet import Fernet
@@ -85,11 +85,9 @@ def decode_token(encrypted_token: str) -> Tuple[Union[int, None], bool]:
 
 
 def send_activation_email(user):
-    print(get_encrypted_token_string(user.id))
-
-    # send_mail(
-    #     'Account activation',
-    #     f'Activation link: {get_encrypted_token_string(user.id)}',
-    #     'DjangoOnlinerLikeShop@test.by',
-    #     [user.email]
-    # )
+    send_mail(
+        'Account activation',
+        f'Activation link: {get_encrypted_token_string(user.id)}',
+        env('EMAIL_ADDRESS'),
+        [user.email]
+    )

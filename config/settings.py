@@ -114,6 +114,13 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'user.User'
 AUTHENTICATION_BACKENDS = ['apps.user.backends.AuthBackend']
 
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = '465'
+EMAIL_HOST_USER = env('EMAIL_ADDRESS')
+EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
