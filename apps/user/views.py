@@ -4,6 +4,9 @@ from django.core.exceptions import ValidationError
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import (
+    IsAuthenticated,
+)
 
 from .models import (
     ExpiringToken,
@@ -12,6 +15,7 @@ from .models import (
 )
 from .serializers import (
     RegistrationSerializer,
+    UserProfileSerializer,
 )
 from .user_activation import (
     send_activation_email,
@@ -80,3 +84,34 @@ class ActivateUser(APIView):
                 return Response('Invalid token')
 
             return Response('Activated')
+
+
+class DeleteUser(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, email, *args, **kwargs):
+        user = User.objects.get(email=email)
+        user.is_deleted = True
+        user.save()
+
+        return Response({'Deleted'})
+
+
+class Profile(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        return Response(
+            UserProfileSerializer(
+                UserProfile.objects.get(user=request.user)
+            ).data
+        )
+
+    def post(self, request, *args, **kwargs):
+        serializer = UserProfileSerializer(
+            UserProfile.objects.get(user=request.user), data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'Profile updated'})
