@@ -18,7 +18,7 @@ from .serializers import (
     RegistrationSerializer,
     UserProfileSerializer,
 )
-from .user_activation import (
+from .activation import (
     send_activation_email,
     decode_token,
 )

@@ -17,6 +17,7 @@ from django.utils import timezone
 import environ
 from cryptography.fernet import Fernet
 
+
 env = environ.Env()
 
 FORMAT_REGEX = r'^_*\d+(\.[\d]{1,6})?_\d+$'
