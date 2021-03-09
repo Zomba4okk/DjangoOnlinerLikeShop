@@ -20,3 +20,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ('email', 'password', 'user_profile')
 
     user_profile = UserProfileSerializer(allow_null=True, required=False)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    password_max_length = User._meta.get_field('password').max_length
+    old_password = serializers.CharField(max_length=password_max_length)
+    new_password = serializers.CharField(max_length=password_max_length)

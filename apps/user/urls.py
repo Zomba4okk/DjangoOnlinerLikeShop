@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    ChangePassword,
     ObtainExpiringAuthToken,
     Register,
     ActivateUser,
@@ -14,4 +15,5 @@ urlpatterns = [
     path('activate/<str:token>/', ActivateUser.as_view()),
     path('delete/<str:email>/', DeleteUser.as_view()),
     path('profile/', Profile.as_view()),
+    path('change_password/', ChangePassword.as_view()),
 ]

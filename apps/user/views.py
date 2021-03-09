@@ -14,6 +14,7 @@ from .models import (
     UserProfile,
 )
 from .serializers import (
+    ChangePasswordSerializer,
     RegistrationSerializer,
     UserProfileSerializer,
 )
@@ -115,3 +116,27 @@ class Profile(APIView):
         serializer.save()
 
         return Response({'Profile updated'})
+
+
+class ChangePassword(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user: User = request.user
+
+        serializer = ChangePasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'Invalid'})
+
+        if not user.check_password(serializer.data['old_password']):
+            return Response({'Incorrect old password'}, status=400)
+
+        try:
+            validate_password(serializer.data['new_password'], user)
+        except ValidationError as e:
+            return Response({"password_validation_errors": e}, status=400)
+
+        user.set_password(serializer.data['new_password'])
+        user.save()
+
+        return Response({'Changed'})
