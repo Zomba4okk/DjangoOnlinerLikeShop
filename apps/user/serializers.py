@@ -26,3 +26,14 @@ class ChangePasswordSerializer(serializers.Serializer):
     password_max_length = User._meta.get_field('password').max_length
     old_password = serializers.CharField(max_length=password_max_length)
     new_password = serializers.CharField(max_length=password_max_length)
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'registration_date', 'user_profile')
+
+    user_profile = serializers.SerializerMethodField()
+
+    def get_user_profile(self, obj):
+        return UserProfileSerializer(UserProfile.objects.get(user=obj)).data

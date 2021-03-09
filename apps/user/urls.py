@@ -6,6 +6,7 @@ from .views import (
     ActivateUser,
     DeleteUser,
     Profile,
+    UserDetail,
 )
 
 
@@ -16,4 +17,5 @@ urlpatterns = [
     path('delete/<str:email>/', DeleteUser.as_view()),
     path('profile/', Profile.as_view()),
     path('change_password/', ChangePassword.as_view()),
+    path('detail/', UserDetail.as_view()),
 ]

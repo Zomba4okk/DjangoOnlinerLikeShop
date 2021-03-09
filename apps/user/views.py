@@ -15,7 +15,7 @@ from .models import (
 )
 from .serializers import (
     ChangePasswordSerializer,
-    RegistrationSerializer,
+    RegistrationSerializer, UserDetailSerializer,
     UserProfileSerializer,
 )
 from .activation import (
@@ -140,3 +140,14 @@ class ChangePassword(APIView):
         user.save()
 
         return Response({'Changed'})
+
+
+class UserDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        serializer = UserDetailSerializer(
+            request.user
+        )
+        # serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
