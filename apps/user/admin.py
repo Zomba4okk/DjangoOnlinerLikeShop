@@ -1,5 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import (
+    UserChangeForm,
+    UserCreationForm,
+)
 
 from .models import (
     User,
@@ -11,34 +16,49 @@ class UserProfileInline(admin.TabularInline):
     model = UserProfile
 
 
-class UserModelAdmin(admin.ModelAdmin):
-    list_display = ('email', 'registration_date', 'account_type')
+class CustomUserCreationForm(UserCreationForm):
+    class Meta():
+        model = User
+        fields = ('email', 'password',)
 
-    fields_add = ('email', 'password', 'account_type', 'is_active',
-                  'is_deleted')
-    fields_edit = ('email', 'account_type', 'is_active',
-                   'is_deleted', 'registration_date', 'last_login',)
 
-    readonly_fields_add = ('registration_date', 'last_login')
-    readonly_fields_edit = readonly_fields_add + ('email',)
+class CustomUserChangeForm(UserChangeForm):
+    class Meta():
+        model = User
+        fields = ('email',)
+
+
+class UserAdmin(BaseUserAdmin):
+    model = User
 
     inlines = [UserProfileInline]
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj:  # editing an existing object
-            return self.readonly_fields_edit
-        return self.readonly_fields_add
+    add_form = CustomUserCreationForm
+    form = CustomUserChangeForm
 
-    def get_fields(self, request, obj=None):
-        if obj:
-            return self.fields_edit
-        return self.fields_add
+    readonly_fields = ('registration_date', 'last_login')
+    fieldsets = (
+        (None, {'fields': ('email',)}),
+        (None, {'fields': ('account_type',)}),
+        (None, {'fields': ('registration_date', 'last_login')}),
+        (None, {'fields': ('is_active', 'is_deleted')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2', 'account_type',
+                       'is_active', 'is_deleted')
+        }
+        ),
+    )
 
-    def save_model(self, request, obj: User, form, change) -> None:
-        if form.cleaned_data.get('password'):
-            obj.set_password(form.cleaned_data['password'])
-        obj.save()
+    list_display = ('email', 'account_type', 'registration_date', 'last_login',
+                    'is_active', 'is_deleted')
+    list_filter = ('account_type', 'is_active', 'is_deleted')
+    search_fields = ('email',)
+    ordering = ('-id',)
+    filter_horizontal = ()
 
 
-admin.site.register(User, UserModelAdmin)
+admin.site.register(User, UserAdmin)
 admin.site.unregister(Group)
