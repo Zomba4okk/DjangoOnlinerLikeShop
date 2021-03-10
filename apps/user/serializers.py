@@ -33,7 +33,4 @@ class UserDetailSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'registration_date', 'user_profile')
 
-    user_profile = serializers.SerializerMethodField()
-
-    def get_user_profile(self, obj):
-        return UserProfileSerializer(UserProfile.objects.get(user=obj)).data
+    user_profile = UserProfileSerializer()

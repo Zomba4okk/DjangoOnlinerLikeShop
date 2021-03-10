@@ -97,7 +97,8 @@ class User(AbstractBaseUser):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(to=User, on_delete=models.CASCADE)
+    user = models.OneToOneField(to=User, on_delete=models.CASCADE,
+                                related_name='user_profile')
 
     phone_number = models.CharField(max_length=16, null=True, blank=True)
     first_name = models.CharField(max_length=32, null=True, blank=True)

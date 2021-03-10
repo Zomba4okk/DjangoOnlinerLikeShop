@@ -2,12 +2,14 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import (
-    IsAuthenticated,
-)
 
+from .activation import (
+    decode_token,
+    send_activation_email,
+)
 from .models import (
     ExpiringToken,
     User,
@@ -15,12 +17,9 @@ from .models import (
 )
 from .serializers import (
     ChangePasswordSerializer,
-    RegistrationSerializer, UserDetailSerializer,
+    RegistrationSerializer,
+    UserDetailSerializer,
     UserProfileSerializer,
-)
-from .activation import (
-    send_activation_email,
-    decode_token,
 )
 
 
@@ -146,8 +145,4 @@ class UserDetail(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        serializer = UserDetailSerializer(
-            request.user
-        )
-        # serializer.is_valid(raise_exception=True)
-        return Response(serializer.data)
+        return Response(UserDetailSerializer(request.user).data)
