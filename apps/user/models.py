@@ -108,5 +108,5 @@ class UserProfile(models.Model):
     sex = models.CharField(max_length=1, choices=SEX_CHOISES,
                            null=True, blank=True)
     avatar = models.ImageField(
-        upload_to='media/user_avatars/', null=True, blank=True
+        upload_to='user_avatars/', null=True, blank=True
     )
