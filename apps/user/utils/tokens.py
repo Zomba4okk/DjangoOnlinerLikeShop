@@ -1,10 +1,3 @@
-# Generates user activation token in the format:
-# <'_' * n><timestamp>_<user id>,
-# with such n so that total len = 32
-# e.g.: ____________1614873250.975825_25
-# regex: ^_*\d+(\.[\d]{1,6})?_\d+$
-
-
 import base64
 import re
 from datetime import datetime
@@ -21,13 +14,13 @@ from cryptography.fernet import Fernet
 
 class ExpiringAuthToken(Token):
     #                               d    h    m    s
-    expiration_period_in_seconds = 30 * 24 * 60 * 60
+    EXPIRATION_PERION_IN_SECONDS = 30 * 24 * 60 * 60
 
     key = models.CharField("Key", max_length=40, unique=True)
 
     def expired(self):
         return (timezone.now() - self.created).total_seconds() \
-               >= self.expiration_period_in_seconds
+               >= self.EXPIRATION_PERION_IN_SECONDS
 
     def update(self):
         self.key = self.generate_key()
@@ -35,6 +28,13 @@ class ExpiringAuthToken(Token):
 
 
 class ActivationToken:
+    '''Generates user activation token in the format:
+    <'_' * n><timestamp>_<user id>,
+    with such n so that total len = 32
+    e.g.: ____________1614873250.975825_25\n
+    Can encrypt, decrypt, validate and parce these tokens.
+    '''
+
     FORMAT_REGEX = r'^_*\d+(\.[\d]{1,6})?_\d+$'
     TOKEN_STRING_LENGTH = 32
     ENCODING = 'utf8'
@@ -83,7 +83,8 @@ class ActivationToken:
         )
 
     @classmethod
-    def decode_token(cls, encrypted_token: str) -> Tuple[Union[int, None], bool]:  # noqa
+    def decode_token(cls, encrypted_token: str) \
+            -> Tuple[Union[int, None], bool]:
         token = cls.get_decrypted_token_string(encrypted_token)
         if not cls.validate_token(token):
             return None, False
