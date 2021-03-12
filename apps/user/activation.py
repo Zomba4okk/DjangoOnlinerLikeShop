@@ -14,22 +14,16 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
-import environ
 from cryptography.fernet import Fernet
 
-
-env = environ.Env()
 
 FORMAT_REGEX = r'^_*\d+(\.[\d]{1,6})?_\d+$'
 TOKEN_STRING_LENGTH = 32
 ENCODING = 'utf8'
-# key\/ must be 32 bytes
-ENCRYPTION_KEY = env('USER_ACTIVATION_ENCRYPTION_KEY')
-EXPIRATION_PERIOD_IN_SECONDS = 1800  # 30 mins
 
 coder = Fernet(
     base64.urlsafe_b64encode(
-        ENCRYPTION_KEY.encode(ENCODING)
+        settings.ENCRYPTION_KEY.encode(ENCODING)
     )
 )
 
@@ -80,7 +74,8 @@ def decode_token(encrypted_token: str) -> Tuple[Union[int, None], bool]:
 
     return (
         user_id,
-        (timezone.now() - dt).total_seconds() < EXPIRATION_PERIOD_IN_SECONDS
+        (timezone.now() - dt).total_seconds()
+        < settings.USER_ACTIVATION_EXPIRATION_PERIOD_IN_SECONDS
     )
 
 
@@ -89,6 +84,6 @@ def send_activation_email(user):
         'Account activation',
         f'Activation link: {settings.USER_ACTIVATION_URI}'
         f'{get_encrypted_token_string(user.id)}',
-        env('EMAIL_ADDRESS'),
+        settings.EMAIL_HOST_USER,
         [user.email]
     )
