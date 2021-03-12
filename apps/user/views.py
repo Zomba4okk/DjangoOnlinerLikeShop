@@ -17,8 +17,10 @@ from .serializers import (
     UserDetailSerializer,
     UserProfileSerializer,
 )
-from .utils.tokens import ActivationToken
-from .utils.emails import send_activation_email
+from .utils import (
+    ActivationEmail,
+    ActivationToken,
+)
 
 
 class ObtainExpiringAuthToken(ObtainAuthToken):
@@ -28,7 +30,7 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
         user = serializer.validated_data['user']
 
         if not user.is_active:
-            send_activation_email(user)
+            ActivationEmail.send_activation_email(user)
             return Response('User inactive')
 
         token, created = ExpiringAuthToken.objects.get_or_create(user=user)
@@ -63,7 +65,7 @@ class Register(APIView):
         user_profile_data = serializer.data['user_profile'] or {}
         UserProfile(user=user, **(user_profile_data)).save()
 
-        send_activation_email(user)
+        ActivationEmail.send_activation_email(user)
 
         return Response('Registered')
 

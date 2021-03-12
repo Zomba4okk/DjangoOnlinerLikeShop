@@ -4,27 +4,10 @@ from datetime import datetime
 from typing import Tuple, Union
 
 from django.conf import settings
-from django.db import models
+
 from django.utils import timezone
 
-from rest_framework.authtoken.models import Token
-
 from cryptography.fernet import Fernet
-
-
-class ExpiringAuthToken(Token):
-    #                               d    h    m    s
-    EXPIRATION_PERION_IN_SECONDS = 30 * 24 * 60 * 60
-
-    key = models.CharField("Key", max_length=40, unique=True)
-
-    def expired(self):
-        return (timezone.now() - self.created).total_seconds() \
-               >= self.EXPIRATION_PERION_IN_SECONDS
-
-    def update(self):
-        self.key = self.generate_key()
-        self.created = timezone.now()
 
 
 class ActivationToken:

@@ -3,8 +3,9 @@ from django.contrib.auth.models import (
     BaseUserManager,
 )
 from django.db import models
+from django.utils import timezone
 
-from .utils.tokens import ExpiringAuthToken  # noqa
+from rest_framework.authtoken.models import Token
 
 
 ACCOUNT_TYPE_STANDARD = 'standard'
@@ -22,6 +23,21 @@ SEX_CHOISES = [
     (SEX_M, 'Male'),
     (SEX_F, 'Female'),
 ]
+
+
+class ExpiringAuthToken(Token):
+    #                               d    h    m    s
+    EXPIRATION_PERION_IN_SECONDS = 30 * 24 * 60 * 60
+
+    key = models.CharField("Key", max_length=40, unique=True)
+
+    def expired(self):
+        return (timezone.now() - self.created).total_seconds() \
+               >= self.EXPIRATION_PERION_IN_SECONDS
+
+    def update(self):
+        self.key = self.generate_key()
+        self.created = timezone.now()
 
 
 class UserManager(BaseUserManager):
