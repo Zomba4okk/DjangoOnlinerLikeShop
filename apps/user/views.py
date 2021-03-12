@@ -87,8 +87,8 @@ class ActivateUser(APIView):
 class DeleteUser(APIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request, email, *args, **kwargs):
-        user = User.objects.get(email=email)
+    def delete(self, request, *args, **kwargs):
+        user = request.user
         user.is_deleted = True
         user.save()
 
