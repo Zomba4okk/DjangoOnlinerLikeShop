@@ -2,10 +2,10 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
-from .activation_token_util import ActivationToken
+from .activation_token_util import ActivationTokenUtil
 
 
-class ActivationEmail:
+class ActivationEmailUtil:
     @staticmethod
     def send_activation_email(user):
         send_mail(
@@ -17,6 +17,6 @@ class ActivationEmail:
                 'activation_email.html',
                 {'link':
                     f'{settings.USER_ACTIVATION_URI}'
-                    f'{ActivationToken.get_encrypted_token_string(user.id)}'}
+                    f'{ActivationTokenUtil.get_encrypted_token_string(user.id)}'}  # noqa
             )
         )

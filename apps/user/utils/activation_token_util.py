@@ -10,7 +10,7 @@ from django.utils import timezone
 from cryptography.fernet import Fernet
 
 
-class ActivationToken:
+class ActivationTokenUtil:
     '''Generates user activation token in the format:
     <'_' * n><timestamp>_<user id>,
     with such n so that total len = 32
