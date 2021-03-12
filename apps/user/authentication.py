@@ -1,11 +1,11 @@
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import exceptions
 
-from .models import ExpiringToken
+from .models import ExpiringAuthToken
 
 
 class ExpiringTokenAuthentication(TokenAuthentication):
-    model = ExpiringToken
+    model = ExpiringAuthToken
 
     def authenticate_credentials(self, key):
         model = self.get_model()

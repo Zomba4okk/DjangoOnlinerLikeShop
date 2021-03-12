@@ -6,12 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .activation import (
-    decode_token,
-    send_activation_email,
-)
 from .models import (
-    ExpiringToken,
+    ExpiringAuthToken,
     User,
     UserProfile,
 )
@@ -21,6 +17,8 @@ from .serializers import (
     UserDetailSerializer,
     UserProfileSerializer,
 )
+from .utils.tokens import ActivationToken
+from .utils.emails import send_activation_email
 
 
 class ObtainExpiringAuthToken(ObtainAuthToken):
@@ -33,7 +31,7 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
             send_activation_email(user)
             return Response('User inactive')
 
-        token, created = ExpiringToken.objects.get_or_create(user=user)
+        token, created = ExpiringAuthToken.objects.get_or_create(user=user)
 
         if not created:
             if token.expired():
@@ -72,7 +70,7 @@ class Register(APIView):
 
 class ActivateUser(APIView):
     def get(self, request, token, *args, **kwargs):
-        user_id, valid = decode_token(token)
+        user_id, valid = ActivationToken.decode_token(token)
         if not valid:
             return Response('Invalid token')
         else:
