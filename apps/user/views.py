@@ -4,6 +4,10 @@ from django.core.exceptions import ValidationError
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import (
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+)
 from rest_framework.views import APIView
 
 from .models import (
@@ -30,8 +34,8 @@ class ObtainExpiringAuthTokenView(ObtainAuthToken):
         user = serializer.validated_data['user']
 
         if not user.is_active:
-            EmailUtil.send_activation_email(user)
-            return Response('User inactive')
+            EmailUtil.send_activation_email(user, raise_exception=False)
+            return Response(status=HTTP_400_BAD_REQUEST)
 
         token, created = ExpiringAuthToken.objects.get_or_create(user=user)
 
@@ -47,7 +51,7 @@ class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = RegistrationSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(serializer.error_messages, status=400)
+            return Response(status=HTTP_400_BAD_REQUEST)
 
         user = User.objects.create_user(
             serializer.data['email'],
@@ -58,32 +62,33 @@ class RegisterView(APIView):
         try:
             validate_password(serializer.data['password'], user)
         except ValidationError as e:
-            return Response({"password_validation_errors": e}, status=400)
+            return Response({"password_validation_errors": e},
+                            status=HTTP_400_BAD_REQUEST)
 
         user.save()
 
         user_profile_data = serializer.data['user_profile'] or {}
         UserProfile(user=user, **(user_profile_data)).save()
 
-        EmailUtil.send_activation_email(user)
+        EmailUtil.send_activation_email(user, raise_exception=False)
 
-        return Response('Registered')
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class ActivateUserView(APIView):
     def get(self, request, token, *args, **kwargs):
         user_id, valid = ActivationTokenUtil.decode_token(token)
         if not valid:
-            return Response('Invalid token')
+            return Response(status=HTTP_400_BAD_REQUEST)
         else:
             try:
                 user = User.objects.get(id=user_id)
                 user.is_active = True
                 user.save()
             except User.DoesNotExist:
-                return Response('Invalid token')
+                return Response(status=HTTP_400_BAD_REQUEST)
 
-            return Response('Activated')
+            return Response(status=HTTP_204_NO_CONTENT)
 
 
 class DeleteUserView(APIView):
@@ -94,7 +99,7 @@ class DeleteUserView(APIView):
         user.is_deleted = True
         user.save()
 
-        return Response({'Deleted'})
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class ProfileView(APIView):
@@ -114,7 +119,7 @@ class ProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response({'Profile updated'})
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class ChangePasswordView(APIView):
@@ -125,20 +130,22 @@ class ChangePasswordView(APIView):
 
         serializer = ChangePasswordSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({'Invalid'})
+            return Response(status=HTTP_400_BAD_REQUEST)
 
         if not user.check_password(serializer.data['old_password']):
-            return Response({'Incorrect old password'}, status=400)
+            return Response({'error': 'Incorrect old password'},
+                            status=HTTP_400_BAD_REQUEST)
 
         try:
             validate_password(serializer.data['new_password'], user)
         except ValidationError as e:
-            return Response({"password_validation_errors": e}, status=400)
+            return Response({'password_validation_errors': e},
+                            status=HTTP_400_BAD_REQUEST)
 
         user.set_password(serializer.data['new_password'])
         user.save()
 
-        return Response({'Changed'})
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class UserDetailView(APIView):
