@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.urls.conf import include
 
+from typing import Optional
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('apps.user.urls')),
