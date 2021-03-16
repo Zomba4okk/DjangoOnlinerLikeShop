@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from .activation_token_util import ActivationTokenUtil
 
 
-class ActivationEmailUtil:
+class EmailUtil:
     @staticmethod
     def send_activation_email(user):
         send_mail(
