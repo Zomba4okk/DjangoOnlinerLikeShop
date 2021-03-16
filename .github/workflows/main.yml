@@ -11,7 +11,6 @@ on:
     branches: [ develop ]
     paths:
       - "*.py"
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -29,5 +28,6 @@ jobs:
         uses: py-actions/flake8@v1
         with:
           checkName: "Python Lint"
+          exclude: "*migrations*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
