@@ -23,7 +23,7 @@ from .utils import (
 )
 
 
-class ObtainExpiringAuthToken(ObtainAuthToken):
+class ObtainExpiringAuthTokenView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -43,7 +43,7 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
         return Response({'token': token.key})
 
 
-class Register(APIView):
+class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = RegistrationSerializer(data=request.data)
         if not serializer.is_valid():
@@ -70,7 +70,7 @@ class Register(APIView):
         return Response('Registered')
 
 
-class ActivateUser(APIView):
+class ActivateUserView(APIView):
     def get(self, request, token, *args, **kwargs):
         user_id, valid = ActivationTokenUtil.decode_token(token)
         if not valid:
@@ -86,7 +86,7 @@ class ActivateUser(APIView):
             return Response('Activated')
 
 
-class DeleteUser(APIView):
+class DeleteUserView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
@@ -97,7 +97,7 @@ class DeleteUser(APIView):
         return Response({'Deleted'})
 
 
-class Profile(APIView):
+class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -117,7 +117,7 @@ class Profile(APIView):
         return Response({'Profile updated'})
 
 
-class ChangePassword(APIView):
+class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -141,7 +141,7 @@ class ChangePassword(APIView):
         return Response({'Changed'})
 
 
-class UserDetail(APIView):
+class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):

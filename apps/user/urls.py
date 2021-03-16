@@ -1,21 +1,21 @@
 from django.urls import path
 from .views import (
-    ChangePassword,
-    ObtainExpiringAuthToken,
-    Register,
-    ActivateUser,
-    DeleteUser,
-    Profile,
-    UserDetail,
+    ChangePasswordView,
+    ObtainExpiringAuthTokenView,
+    RegisterView,
+    ActivateUserView,
+    DeleteUserView,
+    ProfileView,
+    UserDetailView,
 )
 
 
 urlpatterns = [
-    path('login/', ObtainExpiringAuthToken.as_view()),
-    path('register/', Register.as_view()),
-    path('activate/<str:token>/', ActivateUser.as_view()),
-    path('delete/', DeleteUser.as_view()),
-    path('profile/', Profile.as_view()),
-    path('change_password/', ChangePassword.as_view()),
-    path('detail/', UserDetail.as_view()),
+    path('login/', ObtainExpiringAuthTokenView.as_view()),
+    path('register/', RegisterView.as_view()),
+    path('activate/<str:token>/', ActivateUserView.as_view()),
+    path('delete/', DeleteUserView.as_view()),
+    path('profile/', ProfileView.as_view()),
+    path('change_password/', ChangePasswordView.as_view()),
+    path('detail/', UserDetailView.as_view()),
 ]
