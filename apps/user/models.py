@@ -11,7 +11,7 @@ from rest_framework.authtoken.models import Token
 ACCOUNT_TYPE_STANDARD = 'standard'
 ACCOUNT_TYPE_MODERATOR = 'moderator'
 ACCOUNT_TYPE_ADMIN = 'admin'
-ACCOUNT_TYPE_CHOISES = [
+ACCOUNT_TYPE_CHOICES = [
     (ACCOUNT_TYPE_STANDARD, 'Standard user'),
     (ACCOUNT_TYPE_MODERATOR, 'Moderator'),
     (ACCOUNT_TYPE_ADMIN, 'Admin'),
@@ -19,7 +19,7 @@ ACCOUNT_TYPE_CHOISES = [
 
 SEX_M = 'm'
 SEX_F = 'f'
-SEX_CHOISES = [
+SEX_CHOICES = [
     (SEX_M, 'Male'),
     (SEX_F, 'Female'),
 ]
@@ -27,13 +27,13 @@ SEX_CHOISES = [
 
 class ExpiringAuthToken(Token):
     #                               d    h    m    s
-    EXPIRATION_PERION_IN_SECONDS = 30 * 24 * 60 * 60
+    EXPIRATION_PERIOD_IN_SECONDS = 30 * 24 * 60 * 60
 
     key = models.CharField("Key", max_length=40, unique=True)
 
     def expired(self):
         return (timezone.now() - self.created).total_seconds() \
-               >= self.EXPIRATION_PERION_IN_SECONDS
+               >= self.EXPIRATION_PERIOD_IN_SECONDS
 
     def update(self):
         self.key = self.generate_key()
@@ -76,7 +76,7 @@ class User(AbstractBaseUser):
     email = models.EmailField('email address', unique=True)
     is_active = models.BooleanField('is active', default=False)
     is_deleted = models.BooleanField('is deleted', default=False)
-    account_type = models.CharField(choices=ACCOUNT_TYPE_CHOISES,
+    account_type = models.CharField(choices=ACCOUNT_TYPE_CHOICES,
                                     max_length=32)
     registration_date = models.DateTimeField('registration date',
                                              auto_now_add=True)
@@ -106,7 +106,7 @@ class UserProfile(models.Model):
     middle_name = models.CharField(max_length=32, null=True, blank=True)
     address = models.CharField(max_length=150, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    sex = models.CharField(max_length=1, choices=SEX_CHOISES,
+    sex = models.CharField(max_length=1, choices=SEX_CHOICES,
                            null=True, blank=True)
     avatar = models.ImageField(
         upload_to='user_avatars/', null=True, blank=True
