@@ -2,13 +2,10 @@ name: CI
 
 on:
   push:
-    branches-ignore:
-      - "develop"
-      - "master"
     paths:
       - "*.py"
   pull_request:
-    branches: [ develop ]
+    branches: [ master, develop ]
     paths:
       - "*.py"
   # Allows you to run this workflow manually from the Actions tab
