@@ -112,7 +112,7 @@ class ProfileView(APIView):
             ).data
         )
 
-    def post(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
         serializer = UserProfileSerializer(
             UserProfile.objects.get(user=request.user), data=request.data
         )
@@ -125,7 +125,7 @@ class ProfileView(APIView):
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         user: User = request.user
 
         serializer = ChangePasswordSerializer(data=request.data)
