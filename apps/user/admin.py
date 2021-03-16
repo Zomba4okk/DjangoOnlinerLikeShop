@@ -1,11 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.forms import (
+
+from .forms import (
     UserChangeForm,
     UserCreationForm,
 )
-
 from .models import (
     User,
     UserProfile,
@@ -16,25 +16,13 @@ class UserProfileInline(admin.TabularInline):
     model = UserProfile
 
 
-class CustomUserCreationForm(UserCreationForm):
-    class Meta():
-        model = User
-        fields = ('email', 'password',)
-
-
-class CustomUserChangeForm(UserChangeForm):
-    class Meta():
-        model = User
-        fields = ('email',)
-
-
 class UserAdmin(BaseUserAdmin):
     model = User
 
     inlines = [UserProfileInline]
 
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
+    add_form = UserCreationForm
+    form = UserChangeForm
 
     readonly_fields = ('registration_date', 'last_login')
     fieldsets = (
