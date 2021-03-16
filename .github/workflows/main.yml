@@ -2,12 +2,8 @@ name: CI
 
 on:
   push:
-    paths:
-      - "*.py"
   pull_request:
     branches: [ master, develop ]
-    paths:
-      - "*.py"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
