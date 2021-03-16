@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+
+    'apps.user',
 ]
 
 MIDDLEWARE = [
@@ -60,7 +62,9 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'base_templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -109,6 +113,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'user.User'
+AUTHENTICATION_BACKENDS = ['apps.user.backends.AuthBackend']
+USER_ACTIVATION_URI = 'http://localhost:8000/user/activate/'
+# key\/ must be 32 bytes
+USER_ACTIVATION_ENCRYPTION_KEY = env('USER_ACTIVATION_ENCRYPTION_KEY')
+USER_ACTIVATION_EXPIRATION_PERIOD_IN_SECONDS = 1800  # 30 mins
+
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_PORT = '465'
+EMAIL_HOST_USER = env('EMAIL_ADDRESS')
+EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -128,3 +145,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+MEDIA_ROOT = BASE_DIR / 'media'
+
+MEDIA_URL = '/media/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'apps.user.authentication.ExpiringTokenAuthentication',
+    ]
+}
