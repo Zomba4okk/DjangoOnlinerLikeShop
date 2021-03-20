@@ -15,6 +15,10 @@ from .models import (
     User,
     UserProfile,
 )
+from .permissions import (
+    IsAdmin,
+    IsModerator,
+)
 from .serializers import (
     ChangePasswordSerializer,
     RegistrationSerializer,
@@ -153,3 +157,15 @@ class UserDetailView(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response(UserDetailSerializer(request.user).data)
+
+
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated, IsModerator | IsAdmin]
+
+    def get(self, request, *args, **kwargs):
+        return Response(
+            UserDetailSerializer(
+                User.objects.select_related('user_profile').all(),
+                many=True
+            ).data
+        )
