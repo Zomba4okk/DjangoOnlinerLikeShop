@@ -34,3 +34,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = ('email', 'registration_date', 'user_profile')
 
     user_profile = UserProfileSerializer()
+
+
+class FullUserDetailSerializer(UserDetailSerializer):
+    class Meta(UserDetailSerializer.Meta):
+        fields = None
+        exclude = ('password',)

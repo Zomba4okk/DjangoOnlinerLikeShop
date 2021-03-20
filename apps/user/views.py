@@ -21,6 +21,7 @@ from .permissions import (
 )
 from .serializers import (
     ChangePasswordSerializer,
+    FullUserDetailSerializer,
     RegistrationSerializer,
     UserDetailSerializer,
     UserProfileSerializer,
@@ -164,7 +165,7 @@ class UserListView(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response(
-            UserDetailSerializer(
+            FullUserDetailSerializer(
                 User.objects.select_related('user_profile').all(),
                 many=True
             ).data
