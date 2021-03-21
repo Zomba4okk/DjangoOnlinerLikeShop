@@ -10,16 +10,21 @@ from .models import (
     User,
     UserProfile,
 )
+from ..shop.models import Cart
 
 
 class UserProfileInline(admin.TabularInline):
     model = UserProfile
 
 
+class CartInline(admin.TabularInline):
+    model = Cart
+
+
 class UserAdmin(BaseUserAdmin):
     model = User
 
-    inlines = [UserProfileInline]
+    inlines = [UserProfileInline, CartInline]
 
     add_form = UserCreationForm
     form = UserChangeForm
