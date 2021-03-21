@@ -30,6 +30,7 @@ from .utils import (
     EmailUtil,
     ActivationTokenUtil,
 )
+from ..shop.models import Cart
 
 
 class ObtainExpiringAuthTokenView(ObtainAuthToken):
@@ -71,6 +72,7 @@ class RegisterView(APIView):
                             status=HTTP_400_BAD_REQUEST)
 
         user.save()
+        Cart(user=user).save()
 
         user_profile_data = serializer.data['user_profile'] or {}
         UserProfile(user=user, **(user_profile_data)).save()
