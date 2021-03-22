@@ -11,3 +11,6 @@ class ProductFilter(django_filters.FilterSet):
     category = django_filters.CharFilter(
         field_name='category', lookup_expr='name__exact'
     )
+    name = django_filters.CharFilter(
+        field_name='name', lookup_expr='icontains'
+    )
