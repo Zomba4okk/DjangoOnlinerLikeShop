@@ -14,3 +14,16 @@ class ProductFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(
         field_name='name', lookup_expr='icontains'
     )
+
+
+class CategoryFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(
+        field_name='name', lookup_expr='icontains'
+    )
+    subcategories = django_filters.NumberFilter(
+        field_name='id', method='descendants'
+    )
+
+    def descendants(self, queryset, name, value):
+        return queryset.filter(**{name: value}) \
+            .get_descendants(include_self=False)
