@@ -14,10 +14,14 @@ from .permissions import (
 from .serializers import (
     ProductSerializer
 )
+from ..user.permissions import (
+    IsAdmin,
+    IsModerator,
+)
 
 
 class ProductViewset(viewsets.ModelViewSet):
-    permission_classes = (IsReadOnly,)
+    permission_classes = (IsReadOnly | IsAdmin | IsModerator,)
     filter_backends = (rf_filters.DjangoFilterBackend,)
     filterset_class = ProductFilter
 

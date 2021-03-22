@@ -163,7 +163,7 @@ class UserDetailView(APIView):
 
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated, IsModerator | IsAdmin]
+    permission_classes = [IsModerator | IsAdmin]
 
     def get(self, request, *args, **kwargs):
         return Response(
