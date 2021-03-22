@@ -1,4 +1,9 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator
 from django.db import models
+
+from mptt import models as mpttmodels
 
 
 ORDER_STATUS_INCOMPLETE = 'incomplete'
@@ -11,13 +16,14 @@ ORDER_STATUS_CHOICES = (
 )
 
 
-class Category(models.Model):
+class Category(mpttmodels.MPTTModel):
     class Meta:
         verbose_name_plural = 'categories'
 
     name = models.CharField(max_length=64)
-    parent = models.ForeignKey(to='self', on_delete=models.CASCADE,
-                               null=True, blank=True)
+    parent = mpttmodels.TreeForeignKey(to='self', on_delete=models.CASCADE,
+                                       null=True, blank=True,
+                                       related_name='children')
 
     def __str__(self):
         return self.name
@@ -29,7 +35,10 @@ class Product(models.Model):
     name = models.CharField(max_length=64)
     description = models.CharField(max_length=256)
     characteristics = models.CharField(max_length=256)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=(MinValueValidator(Decimal('0.01')),)
+    )
 
     def __str__(self):
         return self.name
