@@ -11,20 +11,22 @@ from .models import (
     Product,
 )
 from ..base.permissions import (
-    IsReadOnly,
+    IsReadOnlyPermission,
 )
 from .serializers import (
     CategorySerializer,
     ProductSerializer,
 )
 from ..user.permissions import (
-    IsAdmin,
-    IsModerator,
+    IsAdminPermission,
+    IsModeratorPermission,
 )
 
 
 class ProductViewset(viewsets.ModelViewSet):
-    permission_classes = (IsReadOnly | IsAdmin | IsModerator,)
+    permission_classes = (
+        IsReadOnlyPermission | IsAdminPermission | IsModeratorPermission,
+    )
     filter_backends = (rf_filters.DjangoFilterBackend,)
     filterset_class = ProductFilter
 
@@ -33,7 +35,9 @@ class ProductViewset(viewsets.ModelViewSet):
 
 
 class CategoryViewset(viewsets.ModelViewSet):
-    permission_classes = (IsReadOnly | IsAdmin | IsModerator,)
+    permission_classes = (
+        IsReadOnlyPermission | IsAdminPermission | IsModeratorPermission,
+    )
     filter_backends = (rf_filters.DjangoFilterBackend,)
     filterset_class = CategoryFilter
 
