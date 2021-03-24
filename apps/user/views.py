@@ -21,9 +21,9 @@ from .permissions import (
 )
 from .serializers import (
     ChangePasswordSerializer,
-    FullUserDetailSerializer,
-    RegistrationSerializer,
     UserDetailSerializer,
+    RegistrationSerializer,
+    FullUserDetailSerializer,
     UserProfileSerializer,
 )
 from .utils import (
@@ -157,7 +157,7 @@ class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        return Response(UserDetailSerializer(request.user).data)
+        return Response(FullUserDetailSerializer(request.user).data)
 
 
 class UserListView(APIView):
@@ -165,7 +165,7 @@ class UserListView(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response(
-            FullUserDetailSerializer(
+            UserDetailSerializer(
                 User.objects.select_related('user_profile').all(),
                 many=True
             ).data
