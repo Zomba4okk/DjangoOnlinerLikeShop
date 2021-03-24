@@ -100,7 +100,7 @@ class ActivateUserView(APIView):
 
 
 class DeleteUserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def delete(self, request, *args, **kwargs):
         user = request.user
@@ -111,7 +111,7 @@ class DeleteUserView(APIView):
 
 
 class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         return Response(
@@ -131,7 +131,7 @@ class ProfileView(APIView):
 
 
 class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def put(self, request, *args, **kwargs):
         user: User = request.user
@@ -157,15 +157,17 @@ class ChangePasswordView(APIView):
 
 
 class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         return Response(FullUserDetailSerializer(request.user).data)
 
 
 class UserListView(ListAPIView):
-    permission_classes = [IsAuthenticated,
-                          IsModeratorPermission | IsAdminPermission]
+    permission_classes = (
+        IsAuthenticated,
+        IsModeratorPermission | IsAdminPermission,
+    )
 
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
