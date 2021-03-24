@@ -2,6 +2,9 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.generics import (
+    ListAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -160,14 +163,9 @@ class UserDetailView(APIView):
         return Response(FullUserDetailSerializer(request.user).data)
 
 
-class UserListView(APIView):
+class UserListView(ListAPIView):
     permission_classes = [IsAuthenticated,
                           IsModeratorPermission | IsAdminPermission]
 
-    def get(self, request, *args, **kwargs):
-        return Response(
-            UserDetailSerializer(
-                User.objects.select_related('user_profile').all(),
-                many=True
-            ).data
-        )
+    queryset = User.objects.all()
+    serializer_class = UserDetailSerializer
