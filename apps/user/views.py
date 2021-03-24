@@ -2,6 +2,9 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.generics import (
+    ListAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -15,10 +18,15 @@ from .models import (
     User,
     UserProfile,
 )
+from .permissions import (
+    IsAdminPermission,
+    IsModeratorPermission,
+)
 from .serializers import (
     ChangePasswordSerializer,
-    RegistrationSerializer,
     UserDetailSerializer,
+    RegistrationSerializer,
+    FullUserDetailSerializer,
     UserProfileSerializer,
 )
 from .utils import (
@@ -92,7 +100,7 @@ class ActivateUserView(APIView):
 
 
 class DeleteUserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def delete(self, request, *args, **kwargs):
         user = request.user
@@ -103,7 +111,7 @@ class DeleteUserView(APIView):
 
 
 class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         return Response(
@@ -123,7 +131,7 @@ class ProfileView(APIView):
 
 
 class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def put(self, request, *args, **kwargs):
         user: User = request.user
@@ -149,7 +157,17 @@ class ChangePasswordView(APIView):
 
 
 class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        return Response(UserDetailSerializer(request.user).data)
+        return Response(FullUserDetailSerializer(request.user).data)
+
+
+class UserListView(ListAPIView):
+    permission_classes = (
+        IsAuthenticated,
+        IsModeratorPermission | IsAdminPermission,
+    )
+
+    queryset = User.objects.all()
+    serializer_class = UserDetailSerializer

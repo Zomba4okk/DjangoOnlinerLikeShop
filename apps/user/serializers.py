@@ -28,9 +28,15 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(max_length=password_max_length)
 
 
-class UserDetailSerializer(serializers.ModelSerializer):
+class FullUserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'registration_date', 'user_profile')
 
     user_profile = UserProfileSerializer()
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta(FullUserDetailSerializer.Meta):
+        model = User
+        fields = ('id', 'email')
