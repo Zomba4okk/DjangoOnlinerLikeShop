@@ -16,8 +16,8 @@ from .models import (
     UserProfile,
 )
 from .permissions import (
-    IsAdmin,
-    IsModerator,
+    IsAdminPermission,
+    IsModeratorPermission,
 )
 from .serializers import (
     ChangePasswordSerializer,
@@ -161,7 +161,8 @@ class UserDetailView(APIView):
 
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated, IsModerator | IsAdmin]
+    permission_classes = [IsAuthenticated,
+                          IsModeratorPermission | IsAdminPermission]
 
     def get(self, request, *args, **kwargs):
         return Response(

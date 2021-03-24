@@ -6,11 +6,11 @@ from .models import (
 )
 
 
-class IsModerator(BasePermission):
+class IsModeratorPermission(BasePermission):
     def has_permission(self, request, view):
         return request.user.account_type == ACCOUNT_TYPE_MODERATOR
 
 
-class IsAdmin(BasePermission):
+class IsAdminPermission(BasePermission):
     def has_permission(self, request, view):
         return request.user.account_type == ACCOUNT_TYPE_ADMIN
