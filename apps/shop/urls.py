@@ -3,9 +3,18 @@ from django.urls import (
     include,
 )
 
-from .routers import router
+from rest_framework import routers
 
+from .views import (
+    CategoryViewset,
+    ProductViewset,
+)
+
+
+router = routers.DefaultRouter()
+router.register('products', ProductViewset, 'product')
+router.register('categories', CategoryViewset, 'category')
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
 ]
