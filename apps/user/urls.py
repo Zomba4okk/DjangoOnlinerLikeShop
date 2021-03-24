@@ -19,5 +19,5 @@ urlpatterns = [
     path('profile/', ProfileView.as_view()),
     path('change_password/', ChangePasswordView.as_view()),
     path('detail/', UserDetailView.as_view()),
-    path('list/', UserListView.as_view()),
+    path('', UserListView.as_view()),
 ]
