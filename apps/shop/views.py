@@ -7,9 +7,10 @@ from .filters import (
     ProductFilter,
 )
 from .models import (
-    Category, Product,
+    Category,
+    Product,
 )
-from .permissions import (
+from ..base.permissions import (
     IsReadOnly,
 )
 from .serializers import (
