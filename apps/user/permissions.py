@@ -1,4 +1,6 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import (
+    IsAuthenticated,
+)
 
 from .models import (
     ACCOUNT_TYPE_MODERATOR,
@@ -6,13 +8,13 @@ from .models import (
 )
 
 
-class IsModeratorPermission(BasePermission):
+class IsModeratorPermission(IsAuthenticated):
     def has_permission(self, request, view):
         return super().has_permission(request, view) and \
                request.user.account_type == ACCOUNT_TYPE_MODERATOR
 
 
-class IsAdminPermission(BasePermission):
+class IsAdminPermission(IsAuthenticated):
     def has_permission(self, request, view):
         return super().has_permission(request, view) and \
                request.user.account_type == ACCOUNT_TYPE_ADMIN

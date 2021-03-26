@@ -166,10 +166,7 @@ class UserDetailView(APIView):
 
 
 class UserListView(ListAPIView):
-    permission_classes = (
-        IsAuthenticated,
-        IsModeratorPermission | IsAdminPermission,
-    )
+    permission_classes = (IsModeratorPermission | IsAdminPermission,)
 
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
