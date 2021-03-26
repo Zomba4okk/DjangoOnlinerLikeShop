@@ -1,29 +1,37 @@
-import django_filters
+from django_filters import (
+    FilterSet,
+    NumberFilter,
+    CharFilter,
+)
+
+from ..base.filters import (
+    MultipleFilter,
+)
 
 
-class ProductFilter(django_filters.FilterSet):
-    min_price = django_filters.NumberFilter(
+class ProductFilterSet(FilterSet):
+    min_price = NumberFilter(
         field_name='price', lookup_expr='gte'
     )
-    max_price = django_filters.NumberFilter(
+    max_price = NumberFilter(
         field_name='price', lookup_expr='lte'
     )
-    category = django_filters.CharFilter(
-        field_name='category', lookup_expr='name__exact'
-    )
-    name = django_filters.CharFilter(
+    name = CharFilter(
         field_name='name', lookup_expr='icontains'
     )
+    category = MultipleFilter(
+        field_name='category', lookup_expr='id__in'
+    )
 
 
-class CategoryFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(
+class CategoryFilterSet(FilterSet):
+    name = CharFilter(
         field_name='name', lookup_expr='icontains'
     )
-    subcategories = django_filters.NumberFilter(
-        field_name='id', method='descendants'
+    ancestor = NumberFilter(
+        field_name='id', method='filter_descendants'
     )
 
-    def descendants(self, queryset, name, value):
+    def filter_descendants(self, queryset, name, value):
         return queryset.filter(**{name: value}) \
             .get_descendants(include_self=False)

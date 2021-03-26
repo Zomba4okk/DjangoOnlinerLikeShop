@@ -3,8 +3,8 @@ from rest_framework import viewsets
 from django_filters import rest_framework as rf_filters
 
 from .filters import (
-    CategoryFilter,
-    ProductFilter,
+    CategoryFilterSet,
+    ProductFilterSet,
 )
 from .models import (
     Category,
@@ -28,7 +28,7 @@ class ProductViewset(viewsets.ModelViewSet):
         IsReadOnlyPermission | IsAdminPermission | IsModeratorPermission,
     )
     filter_backends = (rf_filters.DjangoFilterBackend,)
-    filterset_class = ProductFilter
+    filterset_class = ProductFilterSet
 
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
@@ -39,7 +39,7 @@ class CategoryViewset(viewsets.ModelViewSet):
         IsReadOnlyPermission | IsAdminPermission | IsModeratorPermission,
     )
     filter_backends = (rf_filters.DjangoFilterBackend,)
-    filterset_class = CategoryFilter
+    filterset_class = CategoryFilterSet
 
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
