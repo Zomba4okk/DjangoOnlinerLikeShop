@@ -41,12 +41,15 @@ class Product(models.Model):
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.id}:{self.name}'
 
 
 class Cart(models.Model):
     user = models.OneToOneField(to='user.User', on_delete=models.CASCADE)
     products = models.ManyToManyField(to=Product, through='CartProductM2M')
+
+    def __str__(self):
+        return f"{self.user.email}'s cart"
 
 
 class Order(models.Model):
@@ -68,6 +71,9 @@ class CartProductM2M(models.Model):
     cart = models.ForeignKey(to=Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
     product_count = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.cart} - {self.product} - {self.product_count}'
 
 
 class OrderProductM2M(models.Model):

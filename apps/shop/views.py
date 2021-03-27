@@ -55,37 +55,49 @@ class CategoryViewset(viewsets.ModelViewSet):
     queryset = Category.objects.all()
 
 
-class CartProductSetCountView(APIView):
+class CartProductView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def patch(self, request, *args, **kwargs):
+        '''
+        Accepts `{"product": <product id>, "product_count": <int >= 0>}` JSON,
+        gets current user's cart.
+
+        if relation cart-product exists:
+            if product_count > 0:
+                set cart.product_count = product_count
+            if product_count == 0:
+                delete relation cart-product
+        else:
+            if product_count > 0:
+                create cart-product relation, set it's product_count
+        '''
+
         serializer = ProductCountSerializer(data=request.data)
         if not serializer.is_valid():
+            print('invalid')
             return Response(status=HTTP_400_BAD_REQUEST)
 
         cart = request.user.cart
-        product = Product.objects.get(id=serializer.data['product_id'])
-        new_product_count = serializer.data['product_count']
+        new_product_count = serializer.validated_data['product_count']
 
-        if product not in cart.products.all():
-            if new_product_count != 0:
-                CartProductM2M.objects.create(
-                    cart=cart,
-                    product=product,
-                    product_count=new_product_count
-                )
-                return Response(status=HTTP_204_NO_CONTENT)
-
-            return Response(status=HTTP_400_BAD_REQUEST)
-
-        else:
-            cart_product_m2m = CartProductM2M.objects \
-                .get(cart=cart, product=product)
-
-            if new_product_count == 0:
-                cart_product_m2m.delete()
-            else:
+        try:
+            cart_product_m2m = CartProductM2M.objects.get(
+                product=serializer.validated_data.get('product'),
+                cart=cart
+            )
+            if new_product_count > 0:
                 cart_product_m2m.product_count = new_product_count
                 cart_product_m2m.save()
+                return Response(status=HTTP_204_NO_CONTENT)
+            else:
+                cart_product_m2m.delete()
+                return Response(status=HTTP_204_NO_CONTENT)
+
+        except CartProductM2M.DoesNotExist:
+            if new_product_count > 0:
+                CartProductM2M(
+                    **{'cart': cart, **serializer.validated_data}
+                ).save()
 
             return Response(status=HTTP_204_NO_CONTENT)
