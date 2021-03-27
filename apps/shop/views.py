@@ -24,7 +24,7 @@ from ..base.permissions import (
 )
 from .serializers import (
     CategorySerializer,
-    ProductCountDeltaSerializer,
+    ProductCountSerializer,
     ProductSerializer,
 )
 from ..user.permissions import (
@@ -55,39 +55,37 @@ class CategoryViewset(viewsets.ModelViewSet):
     queryset = Category.objects.all()
 
 
-class CartProductView(APIView):
+class CartProductSetCountView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def patch(self, request, *args, **kwargs):
-        serializer = ProductCountDeltaSerializer(data=request.data)
+        serializer = ProductCountSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST)
 
         cart = request.user.cart
         product = Product.objects.get(id=serializer.data['product_id'])
-        product_count_deleta = serializer.data['count']
+        new_product_count = serializer.data['product_count']
 
-        if product in cart.products.all():
+        if product not in cart.products.all():
+            if new_product_count != 0:
+                CartProductM2M.objects.create(
+                    cart=cart,
+                    product=product,
+                    product_count=new_product_count
+                )
+                return Response(status=HTTP_204_NO_CONTENT)
+
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        else:
             cart_product_m2m = CartProductM2M.objects \
                 .get(cart=cart, product=product)
 
-            if product_count_deleta < 0 and \
-                    cart_product_m2m.product_count < abs(product_count_deleta):
-                return Response(status=HTTP_400_BAD_REQUEST)
-
-            cart_product_m2m.product_count += product_count_deleta
-            cart_product_m2m.delete() \
-                if cart_product_m2m.product_count <= 0 \
-                else cart_product_m2m.save()
+            if new_product_count == 0:
+                cart_product_m2m.delete()
+            else:
+                cart_product_m2m.product_count = new_product_count
+                cart_product_m2m.save()
 
             return Response(status=HTTP_204_NO_CONTENT)
-
-        elif product_count_deleta > 0:
-            CartProductM2M.objects.create(
-                cart=cart, product=product, product_count=product_count_deleta
-            )
-
-            return Response(status=HTTP_204_NO_CONTENT)
-
-        elif product_count_deleta < 0:
-            return Response(status=HTTP_400_BAD_REQUEST)
