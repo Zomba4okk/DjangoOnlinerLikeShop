@@ -6,6 +6,7 @@ from django.urls import (
 from rest_framework import routers
 
 from .views import (
+    CartProductView,
     CategoryViewset,
     ProductViewset,
 )
@@ -17,4 +18,9 @@ router.register('categories', CategoryViewset, 'category')
 
 urlpatterns = [
     path('', include(router.urls)),
+]
+
+
+cart_urls = [
+    path('delta/', CartProductView.as_view()),
 ]
