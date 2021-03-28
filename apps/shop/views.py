@@ -104,12 +104,10 @@ class CartProductView(APIView):
             return Response(status=HTTP_204_NO_CONTENT)
 
     def get(self, request, *args, **kwargs):
-        return Response(
-            CartProductCountSerializer(
-                CartProductM2M.objects.filter(cart=request.user.cart),
-                many=True
-            ).data
-        )
+        queryset = CartProductM2M.objects \
+            .filter(cart=request.user.cart) \
+            .select_related('product')
+        return Response(CartProductCountSerializer(queryset, many=True).data)
 
 
 class CatrToOrderView(APIView):
@@ -118,12 +116,14 @@ class CatrToOrderView(APIView):
     def get(self, request, *args, **kwargs):
 
         cart = request.user.cart
-        cart_product_m2ms = CartProductM2M.objects.filter(cart=cart)
+        cart_product_m2ms = CartProductM2M.objects \
+            .filter(cart=cart) \
+            .select_related('product')
         if cart_product_m2ms.exists():
             order = Order(user=request.user)
             order.save()
 
-            order_product_m2ms = tuple(
+            order_product_m2ms = (
                 OrderProductM2M(
                     order=order,
                     product=cart_product_m2m.product,
