@@ -19,7 +19,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'parent')
 
 
-class ProductCountSerializer(serializers.ModelSerializer):
+class CartProductCountSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartProductM2M
         fields = ('product', 'product_count')

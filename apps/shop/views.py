@@ -24,7 +24,7 @@ from ..base.permissions import (
 )
 from .serializers import (
     CategorySerializer,
-    ProductCountSerializer,
+    CartProductCountSerializer,
     ProductSerializer,
 )
 from ..user.permissions import (
@@ -73,7 +73,7 @@ class CartProductView(APIView):
                 create cart-product relation, set it's product_count
         '''
 
-        serializer = ProductCountSerializer(data=request.data)
+        serializer = CartProductCountSerializer(data=request.data)
         if not serializer.is_valid():
             print('invalid')
             return Response(status=HTTP_400_BAD_REQUEST)
@@ -101,3 +101,11 @@ class CartProductView(APIView):
                 ).save()
 
             return Response(status=HTTP_204_NO_CONTENT)
+
+    def get(self, request, *args, **kwargs):
+        return Response(
+            CartProductCountSerializer(
+                CartProductM2M.objects.filter(cart=request.user.cart),
+                many=True
+            ).data
+        )
