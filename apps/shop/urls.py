@@ -8,7 +8,7 @@ from rest_framework import routers
 from .views import (
     CartProductView,
     CategoryViewset,
-    CatrToOrderView,
+    CatrToOrderView, OrderViewSet,
     ProductViewset,
 )
 
@@ -26,6 +26,11 @@ cart_urls = [
     path('products/', CartProductView.as_view()),
 ]
 
+
+order_router = routers.DefaultRouter()
+order_router.register('', OrderViewSet, 'order')
+
 order_urls = [
-    path('make_from_cart/', CatrToOrderView.as_view())
+    path('make_from_cart/', CatrToOrderView.as_view()),
+    path('', include(order_router.urls)),
 ]

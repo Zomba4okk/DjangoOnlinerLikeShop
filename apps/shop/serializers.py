@@ -56,4 +56,6 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ('id', 'status', 'products')
 
-    products = OrderProductCountSerializer(many=True)
+    products = OrderProductCountSerializer(
+        many=True, source='orderproductm2m_set'
+    )

@@ -1,4 +1,11 @@
-from rest_framework import viewsets
+from rest_framework.viewsets import (
+    GenericViewSet,
+    ModelViewSet,
+)
+from rest_framework.mixins import (
+    ListModelMixin,
+    RetrieveModelMixin,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -23,6 +30,7 @@ from .models import (
 from .serializers import (
     CartProductCountSerializer,
     CategorySerializer,
+    OrderSerializer,
     ProductSerializer,
 )
 from ..base.permissions import (
@@ -34,7 +42,7 @@ from ..user.permissions import (
 )
 
 
-class ProductViewset(viewsets.ModelViewSet):
+class ProductViewset(ModelViewSet):
     permission_classes = (
         IsReadOnlyPermission | IsAdminPermission | IsModeratorPermission,
     )
@@ -45,7 +53,7 @@ class ProductViewset(viewsets.ModelViewSet):
     queryset = Product.objects.all()
 
 
-class CategoryViewset(viewsets.ModelViewSet):
+class CategoryViewset(ModelViewSet):
     permission_classes = (
         IsReadOnlyPermission | IsAdminPermission | IsModeratorPermission,
     )
@@ -139,3 +147,20 @@ class CatrToOrderView(APIView):
             return Response(status=HTTP_204_NO_CONTENT)
 
         return Response(status=HTTP_400_BAD_REQUEST)
+
+
+class OrderViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated,)
+
+    serializer_class = OrderSerializer
+    queryset = Order.objects.all()
+
+    def get_queryset(self):
+        # Has a massive query number optimazation issue,
+        # caused by SlugRelatedField in serializer.
+        # Even though it has products prefetched, OrderProductCountSerializer
+        # still queries db for products.
+        # idk how to fix it
+        return super().get_queryset() \
+            .filter(user=self.request.user) \
+            .prefetch_related('orderproductm2m_set', 'products')
