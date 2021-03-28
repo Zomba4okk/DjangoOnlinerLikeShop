@@ -8,6 +8,7 @@ from rest_framework import routers
 from .views import (
     CartProductView,
     CategoryViewset,
+    CatrToOrderView,
     ProductViewset,
 )
 
@@ -23,4 +24,8 @@ urlpatterns = [
 
 cart_urls = [
     path('products/', CartProductView.as_view()),
+]
+
+order_urls = [
+    path('make_from_cart/', CatrToOrderView.as_view())
 ]

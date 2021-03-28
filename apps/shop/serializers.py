@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from .models import (
     CartProductM2M,
-    Category,
+    Category, Order,
+    OrderProductM2M,
     Product,
 )
 
@@ -37,3 +38,21 @@ class CartProductCountSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class OrderProductCountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderProductM2M
+        fields = ('product', 'product_count')
+
+    product = serializers.SlugRelatedField(
+        slug_field='id', read_only=True
+    )
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ('id', 'status', 'products')
+
+    products = OrderProductCountSerializer(many=True)

@@ -18,6 +18,8 @@ from .models import (
     Category,
     Product,
     CartProductM2M,
+    OrderProductM2M,
+    Order,
 )
 from ..base.permissions import (
     IsReadOnlyPermission,
@@ -109,3 +111,32 @@ class CartProductView(APIView):
                 many=True
             ).data
         )
+
+
+class CatrToOrderView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+
+        cart = request.user.cart
+        cart_product_m2ms = CartProductM2M.objects.filter(cart=cart)
+        if cart_product_m2ms.exists():
+            order = Order(user=request.user)
+            order.save()
+
+            order_product_m2ms = tuple(
+                OrderProductM2M(
+                    order=order,
+                    product=cart_product_m2m.product,
+                    product_count=cart_product_m2m.product_count
+                )
+                for cart_product_m2m
+                in cart_product_m2ms
+            )
+            OrderProductM2M.objects.bulk_create(order_product_m2ms)
+
+            cart_product_m2ms.delete()
+
+            return Response(status=HTTP_204_NO_CONTENT)
+
+        return Response(status=HTTP_400_BAD_REQUEST)

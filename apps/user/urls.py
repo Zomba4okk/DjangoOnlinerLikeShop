@@ -13,6 +13,7 @@ from .views import (
 )
 from ..shop.urls import (
     cart_urls,
+    order_urls,
 )
 
 
@@ -28,4 +29,5 @@ urlpatterns = [
 
     # shop app
     path('current/cart/', include(cart_urls)),
+    path('current/orders/', include(order_urls)),
 ]
