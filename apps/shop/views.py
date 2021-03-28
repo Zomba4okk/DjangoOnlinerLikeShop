@@ -67,6 +67,28 @@ class CategoryViewset(ModelViewSet):
 class CartProductView(APIView):
     permission_classes = (IsAuthenticated,)
 
+    def put(self, request, *args, **kwargs):
+        '''
+        Accepts `[{"product": <product id>, "product_count": <int >= 0>} * n]`
+        JSON
+        '''
+        serializer = CartProductCountSerializer(data=request.data, many=True)
+        if not serializer.is_valid():
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        cart = request.user.cart
+        CartProductM2M.objects.filter(cart=cart).delete()
+
+        cart_product_m2ms = (
+            CartProductM2M(**cart_product_m2m_data, cart=cart)
+            for cart_product_m2m_data
+            in serializer.validated_data
+            if cart_product_m2m_data.get('product_count') > 0
+        )
+        CartProductM2M.objects.bulk_create(cart_product_m2ms)
+
+        return Response(status=HTTP_204_NO_CONTENT)
+
     def patch(self, request, *args, **kwargs):
         '''
         Accepts `{"product": <product id>, "product_count": <int >= 0>}` JSON,
@@ -84,7 +106,6 @@ class CartProductView(APIView):
 
         serializer = CartProductCountSerializer(data=request.data)
         if not serializer.is_valid():
-            print('invalid')
             return Response(status=HTTP_400_BAD_REQUEST)
 
         cart = request.user.cart
