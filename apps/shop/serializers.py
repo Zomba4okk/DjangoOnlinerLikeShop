@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from .models import (
     CartProductM2M,
-    Category, Order,
+    Category,
+    Order,
     OrderProductM2M,
     Product,
 )
