@@ -35,3 +35,7 @@ class CategoryFilterSet(FilterSet):
     def filter_descendants(self, queryset, name, value):
         return queryset.filter(**{name: value}) \
             .get_descendants(include_self=False)
+
+
+class UserFilterSet(FilterSet):
+    user = MultipleFilter(field_name='id', lookup_expr='in')

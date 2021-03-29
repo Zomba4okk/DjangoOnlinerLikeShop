@@ -21,6 +21,7 @@ from django_filters import rest_framework as rf_filters
 from .filters import (
     CategoryFilterSet,
     ProductFilterSet,
+    UserFilterSet,
 )
 from .models import (
     CartProductM2M,
@@ -36,12 +37,16 @@ from .serializers import (
     OrderProductCountSerializer,
     OrderSerializer,
     ProductSerializer,
+    UserOrderSerializer,
 )
 from ..base.permissions import (
     IsReadOnlyPermission,
 )
 from ..base.mixins import (
     GetSerializerClassMixin,
+)
+from ..user.models import (
+    User,
 )
 from ..user.permissions import (
     IsAdminPermission,
@@ -276,3 +281,15 @@ class OrderViewSet(ListModelMixin,
             return Response(status=HTTP_204_NO_CONTENT)
 
         return Response(status=HTTP_400_BAD_REQUEST)
+
+
+class AdminUserOrderViewSet(ListModelMixin,
+                            GenericViewSet):
+    permission_classes = (IsModeratorPermission | IsAdminPermission,)
+
+    serializer_class = UserOrderSerializer
+    queryset = User.objects.prefetch_related(
+        'orders__products', 'orders__orderproductm2m_set'
+    )
+    filter_backends = (rf_filters.DjangoFilterBackend,)
+    filterset_class = UserFilterSet

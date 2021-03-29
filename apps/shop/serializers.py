@@ -7,6 +7,9 @@ from .models import (
     OrderProductM2M,
     Product,
 )
+from ..user.models import (
+    User,
+)
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -77,3 +80,11 @@ class OrderSerializer(serializers.ModelSerializer):
     products = OrderProductCountSerializer(
         many=True, source='orderproductm2m_set'
     )
+
+
+class UserOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'orders')
+
+    orders = OrderSerializer(many=True)
