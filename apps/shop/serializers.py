@@ -26,6 +26,10 @@ class CartProductCountSerializer(serializers.ModelSerializer):
         model = CartProductM2M
         fields = ('product', 'product_count')
 
+    # Causes a massive query number optimazation issue.
+    # Even if it recieves qs with products prefetched,
+    # it still queries db for each individual product.
+    # idk how to fix it
     product = serializers.SlugRelatedField(
         slug_field='id', read_only=False, queryset=Product.objects.all()
     )
@@ -46,9 +50,23 @@ class OrderProductCountSerializer(serializers.ModelSerializer):
         model = OrderProductM2M
         fields = ('product', 'product_count')
 
+    # Causes a massive query number optimazation issue.
+    # Even if it recieves qs with products prefetched,
+    # it still queries db for each individual product.
+    # idk how to fix it
     product = serializers.SlugRelatedField(
-        slug_field='id', read_only=True
+        slug_field='id', read_only=False, queryset=Product.objects.all()
     )
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        if attrs['product_count'] < 0:
+            raise serializers.ValidationError(
+                'product_count must not be >= 0'
+            )
+
+        return attrs
 
 
 class OrderSerializer(serializers.ModelSerializer):

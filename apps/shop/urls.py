@@ -8,7 +8,8 @@ from rest_framework import routers
 from .views import (
     CartProductView,
     CategoryViewset,
-    CatrToOrderView, OrderViewSet,
+    CatrToOrderView,
+    OrderViewSet,
     ProductViewset,
 )
 

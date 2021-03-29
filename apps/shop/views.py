@@ -5,6 +5,7 @@ from rest_framework.viewsets import (
 from rest_framework.mixins import (
     ListModelMixin,
     RetrieveModelMixin,
+    UpdateModelMixin,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -26,15 +27,20 @@ from .models import (
     Order,
     OrderProductM2M,
     Product,
+    ORDER_STATUS_INCOMPLETE,
 )
 from .serializers import (
     CartProductCountSerializer,
     CategorySerializer,
+    OrderProductCountSerializer,
     OrderSerializer,
     ProductSerializer,
 )
 from ..base.permissions import (
     IsReadOnlyPermission,
+)
+from ..base.mixins import (
+    GetSerializerClassMixin,
 )
 from ..user.permissions import (
     IsAdminPermission,
@@ -170,18 +176,78 @@ class CatrToOrderView(APIView):
         return Response(status=HTTP_400_BAD_REQUEST)
 
 
-class OrderViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
+class OrderViewSet(ListModelMixin,
+                   RetrieveModelMixin,
+                   UpdateModelMixin,
+                   GetSerializerClassMixin,
+                   GenericViewSet):
     permission_classes = (IsAuthenticated,)
 
     serializer_class = OrderSerializer
+    serializer_action_classes = {
+        'update': OrderProductCountSerializer,
+        'partial_update': OrderProductCountSerializer,
+    }
     queryset = Order.objects.all()
 
     def get_queryset(self):
-        # Has a massive query number optimazation issue,
-        # caused by SlugRelatedField in serializer.
-        # Even though it has products prefetched, OrderProductCountSerializer
-        # still queries db for products.
-        # idk how to fix it
         return super().get_queryset() \
             .filter(user=self.request.user) \
             .prefetch_related('orderproductm2m_set', 'products')
+
+    def get_order_to_uptade(self):
+        order = self.get_object()
+
+        if order.status != ORDER_STATUS_INCOMPLETE:
+            raise ValueError('Can only update INCOMPLETE orders')
+
+        return order
+
+    def update(self, request, *args, **kwargs):
+        order = self.get_order_to_uptade()
+
+        serializer = self.get_serializer(data=request.data, many=True)
+        if not serializer.is_valid():
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        order.products.clear()
+
+        order_product_m2ms = (
+            OrderProductM2M(**order_product_m2m_data, order=order)
+            for order_product_m2m_data
+            in serializer.validated_data
+            if order_product_m2m_data.get('product_count') > 0
+        )
+        OrderProductM2M.objects.bulk_create(order_product_m2ms)
+
+        return Response(status=HTTP_204_NO_CONTENT)
+
+    def partial_update(self, request, *args, **kwargs):
+        order = self.get_order_to_uptade()
+
+        serializer = self.get_serializer(data=request.data, many=False)
+        if not serializer.is_valid():
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        new_product_count = serializer.validated_data['product_count']
+
+        try:
+            order_product_m2m = OrderProductM2M.objects.get(
+                product=serializer.validated_data.get('product'),
+                order=order
+            )
+            if new_product_count > 0:
+                order_product_m2m.product_count = new_product_count
+                order_product_m2m.save()
+                return Response(status=HTTP_204_NO_CONTENT)
+            else:
+                order_product_m2m.delete()
+                return Response(status=HTTP_204_NO_CONTENT)
+
+        except OrderProductM2M.DoesNotExist:
+            if new_product_count > 0:
+                OrderProductM2M(
+                    **{'order': order, **serializer.validated_data}
+                ).save()
+
+            return Response(status=HTTP_204_NO_CONTENT)
