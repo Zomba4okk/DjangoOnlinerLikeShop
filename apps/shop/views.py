@@ -3,6 +3,7 @@ from rest_framework.viewsets import (
     ModelViewSet,
 )
 from rest_framework.mixins import (
+    DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
@@ -179,6 +180,7 @@ class CatrToOrderView(APIView):
 class OrderViewSet(ListModelMixin,
                    RetrieveModelMixin,
                    UpdateModelMixin,
+                   DestroyModelMixin,
                    GetSerializerClassMixin,
                    GenericViewSet):
     permission_classes = (IsAuthenticated,)
@@ -251,3 +253,11 @@ class OrderViewSet(ListModelMixin,
                 ).save()
 
             return Response(status=HTTP_204_NO_CONTENT)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status == ORDER_STATUS_INCOMPLETE:
+            self.perform_destroy(instance)
+            return Response(status=HTTP_204_NO_CONTENT)
+
+        return Response(status=HTTP_400_BAD_REQUEST)
