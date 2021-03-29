@@ -82,9 +82,19 @@ class OrderSerializer(serializers.ModelSerializer):
     )
 
 
-class UserOrderSerializer(serializers.ModelSerializer):
+class UserOrdersSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'orders')
 
     orders = OrderSerializer(many=True)
+
+
+class OrderWithUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ('id', 'user_id', 'status', 'products')
+
+    products = OrderProductCountSerializer(
+        many=True, source='orderproductm2m_set'
+    )

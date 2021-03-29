@@ -36,8 +36,9 @@ from .serializers import (
     CategorySerializer,
     OrderProductCountSerializer,
     OrderSerializer,
+    OrderWithUserSerializer,
     ProductSerializer,
-    UserOrderSerializer,
+    UserOrdersSerializer,
 )
 from ..base.permissions import (
     IsReadOnlyPermission,
@@ -287,9 +288,19 @@ class AdminUserOrderViewSet(ListModelMixin,
                             GenericViewSet):
     permission_classes = (IsModeratorPermission | IsAdminPermission,)
 
-    serializer_class = UserOrderSerializer
+    serializer_class = UserOrdersSerializer
     queryset = User.objects.prefetch_related(
         'orders__products', 'orders__orderproductm2m_set'
     )
     filter_backends = (rf_filters.DjangoFilterBackend,)
     filterset_class = UserFilterSet
+
+
+class AdminOrderViewSet(RetrieveModelMixin,
+                        GenericViewSet):
+    permission_classes = (IsModeratorPermission | IsAdminPermission,)
+
+    serializer_class = OrderWithUserSerializer
+    queryset = Order.objects.prefetch_related(
+        'user', 'orderproductm2m_set', 'products'
+    )
