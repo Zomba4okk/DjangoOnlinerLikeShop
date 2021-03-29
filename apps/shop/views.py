@@ -77,7 +77,7 @@ class CartProductView(APIView):
     def put(self, request, *args, **kwargs):
         '''
         Accepts `[{"product": <product id>, "product_count": <int >= 0>} * n]`
-        JSON
+        JSON.
         '''
         serializer = CartProductCountSerializer(data=request.data, many=True)
         if not serializer.is_valid():
@@ -110,7 +110,6 @@ class CartProductView(APIView):
             if product_count > 0:
                 create cart-product relation, set it's product_count
         '''
-
         serializer = CartProductCountSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST)
@@ -206,6 +205,10 @@ class OrderViewSet(ListModelMixin,
         return order
 
     def update(self, request, *args, **kwargs):
+        '''
+        Accepts `[{"product": <product id>, "product_count": <int >= 0>} * n]`
+        JSON.
+        '''
         order = self.get_order_to_uptade()
 
         serializer = self.get_serializer(data=request.data, many=True)
@@ -225,6 +228,9 @@ class OrderViewSet(ListModelMixin,
         return Response(status=HTTP_204_NO_CONTENT)
 
     def partial_update(self, request, *args, **kwargs):
+        '''
+        Accepts `{"product": <product id>, "product_count": <int >= 0>}` JSON.
+        '''
         order = self.get_order_to_uptade()
 
         serializer = self.get_serializer(data=request.data, many=False)
