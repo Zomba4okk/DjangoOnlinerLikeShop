@@ -30,6 +30,8 @@ from .models import (
     OrderProductM2M,
     Product,
     ORDER_STATUS_INCOMPLETE,
+    ORDER_STATUS_PAID,
+    ORDER_STATUS_CLOSED,
 )
 from .serializers import (
     CartProductCountSerializer,
@@ -304,3 +306,16 @@ class AdminOrderViewSet(RetrieveModelMixin,
     queryset = Order.objects.prefetch_related(
         'user', 'orderproductm2m_set', 'products'
     )
+
+
+class AdminCloseOrder(APIView):
+    permission_classes = (IsModeratorPermission | IsAdminPermission,)
+
+    def get(self, request, order_id, *arge, **kwargs):
+        order = Order.objects.get(id=order_id)
+        if order.status == ORDER_STATUS_PAID:
+            order.status = ORDER_STATUS_CLOSED
+            order.save()
+            return Response(status=HTTP_204_NO_CONTENT)
+
+        return Response(status=HTTP_400_BAD_REQUEST)

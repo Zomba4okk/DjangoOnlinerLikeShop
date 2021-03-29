@@ -6,6 +6,7 @@ from django.urls import (
 from rest_framework import routers
 
 from .views import (
+    AdminCloseOrder,
     AdminOrderViewSet,
     AdminUserOrderViewSet,
     CartProductView,
@@ -25,6 +26,7 @@ router.register('orders', AdminOrderViewSet, 'orders')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('orders/<int:order_id>/close/', AdminCloseOrder.as_view())
 ]
 
 
