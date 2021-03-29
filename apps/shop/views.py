@@ -176,6 +176,15 @@ class CatrToOrderView(APIView):
         return Response(status=HTTP_400_BAD_REQUEST)
 
 
+class ClearCartView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        cart = request.user.cart
+        cart.products.clear()
+        return Response(status=HTTP_204_NO_CONTENT)
+
+
 class OrderViewSet(ListModelMixin,
                    RetrieveModelMixin,
                    UpdateModelMixin,

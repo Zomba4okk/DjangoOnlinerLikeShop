@@ -9,6 +9,7 @@ from .views import (
     CartProductView,
     CategoryViewset,
     CatrToOrderView,
+    ClearCartView,
     OrderViewSet,
     ProductViewset,
 )
@@ -25,6 +26,7 @@ urlpatterns = [
 
 cart_urls = [
     path('products/', CartProductView.as_view()),
+    path('clear/', ClearCartView.as_view()),
 ]
 
 
