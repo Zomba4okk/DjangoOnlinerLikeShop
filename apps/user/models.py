@@ -7,6 +7,10 @@ from django.utils import timezone
 
 from rest_framework.authtoken.models import Token
 
+from apps.shop.models import (
+    Cart,
+)
+
 
 ACCOUNT_TYPE_STANDARD = 'standard'
 ACCOUNT_TYPE_MODERATOR = 'moderator'
@@ -43,16 +47,17 @@ class ExpiringAuthToken(Token):
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, password, save=True, **kwargs):
-        if not email:
-            raise ValueError('The given email must be set')
+    def _create_user(self, email, password, **kwargs):
         email = self.normalize_email(email)
+        user_profile_data = kwargs.pop('user_profile', {})
 
         user = self.model(email=email, **kwargs)
         user.set_password(password)
+        user.save()
 
-        if save:
-            user.save(using=self._db)
+        UserProfile.objects.create(user=user, **user_profile_data)
+
+        Cart.objects.create(user=user)
 
         return user
 

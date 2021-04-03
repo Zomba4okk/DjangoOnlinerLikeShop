@@ -33,9 +33,6 @@ from .utils import (
     EmailUtil,
     ActivationTokenUtil,
 )
-from apps.shop.models import (
-    Cart,
-)
 
 
 class ObtainExpiringAuthTokenView(ObtainAuthToken):
@@ -64,23 +61,7 @@ class RegisterView(APIView):
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(
-            serializer.data['email'],
-            serializer.data['password'],
-            save=False
-        )
-
-        try:
-            validate_password(serializer.data['password'], user)
-        except ValidationError as e:
-            return Response({"password_validation_errors": e},
-                            status=HTTP_400_BAD_REQUEST)
-
-        user.save()
-        Cart(user=user).save()
-
-        user_profile_data = serializer.data['user_profile'] or {}
-        UserProfile(user=user, **(user_profile_data)).save()
+        user = serializer.save()
 
         EmailUtil.send_activation_email(user, raise_exception=False)
 

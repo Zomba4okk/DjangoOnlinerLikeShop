@@ -45,7 +45,8 @@ class Product(models.Model):
 
 
 class Cart(models.Model):
-    user = models.OneToOneField(to='user.User', on_delete=models.CASCADE)
+    user = models.OneToOneField(to='user.User', on_delete=models.CASCADE,
+                                related_name='cart')
     products = models.ManyToManyField(to=Product, through='CartProductM2M')
 
     def __str__(self):
