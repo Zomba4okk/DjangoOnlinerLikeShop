@@ -11,7 +11,7 @@ from .models import (
 )
 
 
-class OrderProductM2MInline(admin.TabularInline):
+class OrderProductM2MInline(admin.StackedInline):
     model = OrderProductM2M
     extra = 1
 
