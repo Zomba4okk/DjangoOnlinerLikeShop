@@ -42,16 +42,16 @@ from .serializers import (
     ProductSerializer,
     UserOrdersSerializer,
 )
-from ..base.permissions import (
+from apps.base.permissions import (
     IsReadOnlyPermission,
 )
-from ..base.mixins import (
+from apps.base.mixins import (
     GetSerializerClassMixin,
 )
-from ..user.models import (
+from apps.user.models import (
     User,
 )
-from ..user.permissions import (
+from apps.user.permissions import (
     IsAdminPermission,
     IsModeratorPermission,
 )

@@ -10,7 +10,9 @@ from .models import (
     User,
     UserProfile,
 )
-from ..shop.models import Cart
+from apps.shop.models import (
+    Cart,
+)
 
 
 class UserProfileInline(admin.TabularInline):

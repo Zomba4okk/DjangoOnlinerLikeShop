@@ -7,7 +7,7 @@ from .models import (
     OrderProductM2M,
     Product,
 )
-from ..user.models import (
+from apps.user.models import (
     User,
 )
 

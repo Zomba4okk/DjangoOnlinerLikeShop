@@ -33,7 +33,9 @@ from .utils import (
     EmailUtil,
     ActivationTokenUtil,
 )
-from ..shop.models import Cart
+from apps.shop.models import (
+    Cart,
+)
 
 
 class ObtainExpiringAuthTokenView(ObtainAuthToken):

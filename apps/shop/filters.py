@@ -4,7 +4,7 @@ from django_filters import (
     CharFilter,
 )
 
-from ..base.filters import (
+from apps.base.filters import (
     MultipleFilter,
 )
 
@@ -32,7 +32,8 @@ class CategoryFilterSet(FilterSet):
         field_name='id', method='filter_descendants'
     )
 
-    def filter_descendants(self, queryset, name, value):
+    @staticmethod
+    def filter_descendants(queryset, name, value):
         return queryset.filter(**{name: value}) \
             .get_descendants(include_self=False)
 
