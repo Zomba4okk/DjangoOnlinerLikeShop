@@ -1,4 +1,4 @@
-class GetSerializerClassMixin(object):
+class GetSerializerClassMixin:
 
     def get_serializer_class(self):
         try:
