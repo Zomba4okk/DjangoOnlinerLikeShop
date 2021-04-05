@@ -153,7 +153,7 @@ class CartProductView(APIView):
         return Response(CartProductCountSerializer(queryset, many=True).data)
 
 
-class CatrToOrderView(APIView):
+class CartToOrderView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
@@ -213,7 +213,7 @@ class OrderViewSet(ListModelMixin,
             .filter(user=self.request.user) \
             .prefetch_related('orderproductm2m_set', 'products')
 
-    def get_order_to_uptade(self):
+    def get_order_to_update(self):
         order = self.get_object()
 
         if order.status != ORDER_STATUS_INCOMPLETE:
@@ -226,7 +226,7 @@ class OrderViewSet(ListModelMixin,
         Accepts `[{"product": <product id>, "product_count": <int >= 0>} * n]`
         JSON.
         '''
-        order = self.get_order_to_uptade()
+        order = self.get_order_to_update()
 
         serializer = self.get_serializer(data=request.data, many=True)
         if not serializer.is_valid():
@@ -248,7 +248,7 @@ class OrderViewSet(ListModelMixin,
         '''
         Accepts `{"product": <product id>, "product_count": <int >= 0>}` JSON.
         '''
-        order = self.get_order_to_uptade()
+        order = self.get_order_to_update()
 
         serializer = self.get_serializer(data=request.data, many=False)
         if not serializer.is_valid():

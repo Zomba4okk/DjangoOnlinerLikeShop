@@ -13,7 +13,7 @@ from .views import (
     AdminUserOrderViewSet,
     CartProductView,
     CategoryViewset,
-    CatrToOrderView,
+    CartToOrderView,
     ClearCartView,
     OrderViewSet,
     ProductViewset,
@@ -42,6 +42,6 @@ order_router = routers.DefaultRouter()
 order_router.register('', OrderViewSet, 'order')
 
 order_urls = [
-    path('make_from_cart/', CatrToOrderView.as_view()),
+    path('make_from_cart/', CartToOrderView.as_view()),
     path('', include(order_router.urls)),
 ]
