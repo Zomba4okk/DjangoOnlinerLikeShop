@@ -3,9 +3,10 @@ from django_filters import (
     NumberFilter,
     CharFilter,
 )
+from django.forms.fields import IntegerField, CharField
 
 from apps.base.filters import (
-    MultipleFilter,
+    MultipleValueFilter,
 )
 
 
@@ -19,8 +20,8 @@ class ProductFilterSet(FilterSet):
     name = CharFilter(
         field_name='name', lookup_expr='icontains'
     )
-    category = MultipleFilter(
-        field_name='category', lookup_expr='id__in'
+    category = MultipleValueFilter(
+        field_class=CharField, field_name='category', lookup_expr='id__in'
     )
 
 
@@ -39,4 +40,6 @@ class CategoryFilterSet(FilterSet):
 
 
 class UserFilterSet(FilterSet):
-    user = MultipleFilter(field_name='id', lookup_expr='in')
+    user = MultipleValueFilter(
+        field_class=IntegerField, field_name='user'
+    )

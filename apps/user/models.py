@@ -70,6 +70,9 @@ class UserManager(BaseUserManager):
         kwargs['is_active'] = True
         return self._create_user(email, password, **kwargs)
 
+    def create(self, *args, **kwargs):
+        return self._create_user(*args, **kwargs)
+
 
 class User(AbstractBaseUser):
     class Meta:

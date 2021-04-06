@@ -33,9 +33,12 @@ from .models import (
     Order,
     OrderProductM2M,
     Product,
-    ORDER_STATUS_INCOMPLETE,
     ORDER_STATUS_PAID,
     ORDER_STATUS_CLOSED,
+)
+from .permissions import (
+    CanChangeOrderPermission,
+    IsOwnerPermission,
 )
 from .serializers import (
     CategorySerializer,
@@ -53,7 +56,7 @@ from apps.base.mixins import (
     GetSerializerClassMixin,
 )
 from apps.user.models import (
-    User,
+    ACCOUNT_TYPE_STANDARD,
 )
 from apps.user.permissions import (
     IsAdminPermission,
@@ -83,7 +86,7 @@ class CategoryViewset(ModelViewSet):
     queryset = Category.objects.all()
 
 
-class CartProductView(APIView):
+class CartProductsView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def patch(self, request, *args, **kwargs):
@@ -94,26 +97,20 @@ class CartProductView(APIView):
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST)
 
-        ###########
-
-        try:
-            product = Product.objects.get(
-                id=serializer.validated_data['product_id']
-            )
-        except Product.DoesNotExist:
-            return Response(status=HTTP_404_NOT_FOUND)
-
-        cart = request.user.cart
-
-        ###########
-
         try:
             DeltaUtil.smart_delta(
                 CartProductM2M,
-                {'cart': cart, 'product': product},
+                {
+                    'cart': request.user.cart,
+                    'product': Product.objects.get(
+                        id=serializer.validated_data['product_id']
+                    )
+                },
                 'product_count',
                 serializer.validated_data['product_count']
             )
+        except Product.DoesNotExist:
+            return Response(status=HTTP_404_NOT_FOUND)
         except (NonPositiveCountException, AttributeError):
             return Response(status=HTTP_400_BAD_REQUEST)
 
@@ -179,113 +176,60 @@ class OrderViewSet(ListModelMixin,
                    DestroyModelMixin,
                    GetSerializerClassMixin,
                    GenericViewSet):
-    permission_classes = (IsAuthenticated,)
-
-    serializer_class = OrderSerializer
-    # serializer_action_classes = {
-    #     'update': OrderProductCountSerializer,
-    #     'partial_update': OrderProductCountSerializer,
-    # }
-    queryset = Order.objects.all()
-
-    def get_queryset(self):
-        return super().get_queryset() \
-            .filter(user=self.request.user) \
-            .prefetch_related('product_relations', 'products', 'user')
-
-    def get_order_to_update(self):
-        order = self.get_object()
-
-        if order.status != ORDER_STATUS_INCOMPLETE:
-            raise ValueError('Can only update INCOMPLETE orders')
-
-        return order
-
-    def update(self, request, *args, **kwargs):
-        '''
-        Accepts `[{"product": <product id>, "product_count": <int >= 0>} * n]`
-        JSON.
-        '''
-        order = self.get_order_to_update()
-
-        serializer = self.get_serializer(data=request.data, many=True)
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST)
-
-        order.products.clear()
-
-        order_product_m2ms = (
-            OrderProductM2M(**order_product_m2m_data, order=order)
-            for order_product_m2m_data
-            in serializer.validated_data
-            if order_product_m2m_data.get('product_count') > 0
-        )
-        OrderProductM2M.objects.bulk_create(order_product_m2ms)
-
-        return Response(status=HTTP_204_NO_CONTENT)
-
-    def partial_update(self, request, *args, **kwargs):
-        '''
-        Accepts `{"product": <product id>, "product_count": <int >= 0>}` JSON.
-        '''
-        order = self.get_order_to_update()
-
-        serializer = self.get_serializer(data=request.data, many=False)
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST)
-
-        new_product_count = serializer.validated_data['product_count']
-
-        try:
-            order_product_m2m = OrderProductM2M.objects.get(
-                product=serializer.validated_data.get('product'),
-                order=order
-            )
-            if new_product_count > 0:
-                order_product_m2m.product_count = new_product_count
-                order_product_m2m.save()
-                return Response(status=HTTP_204_NO_CONTENT)
-            else:
-                order_product_m2m.delete()
-                return Response(status=HTTP_204_NO_CONTENT)
-
-        except OrderProductM2M.DoesNotExist:
-            if new_product_count > 0:
-                OrderProductM2M(
-                    **{'order': order, **serializer.validated_data}
-                ).save()
-
-            return Response(status=HTTP_204_NO_CONTENT)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.status == ORDER_STATUS_INCOMPLETE:
-            self.perform_destroy(instance)
-            return Response(status=HTTP_204_NO_CONTENT)
-
-        return Response(status=HTTP_400_BAD_REQUEST)
-
-
-class AdminUserOrderViewSet(ListModelMixin,
-                            GenericViewSet):
-    permission_classes = (IsModeratorPermission | IsAdminPermission,)
-
-    # serializer_class = UserOrdersSerializer
-    queryset = User.objects.prefetch_related(
-        'orders__products', 'orders__orderproductm2m_set'
+    permission_classes = (
+        IsAuthenticated,
+        IsReadOnlyPermission | (IsOwnerPermission & CanChangeOrderPermission),
     )
+
     filter_backends = (rf_filters.DjangoFilterBackend,)
     filterset_class = UserFilterSet
 
+    serializer_class = OrderSerializer
+    serializer_action_classes = {
+        'partial_update': ProductCountSerializer,
+        'create': ProductCountSerializer,
+    }
+    queryset = Order.objects.all()
 
-class AdminOrderViewSet(RetrieveModelMixin,
-                        GenericViewSet):
-    permission_classes = (IsModeratorPermission | IsAdminPermission,)
+    def get_queryset(self):
+        queryset = super().get_queryset()
 
-    # serializer_class = OrderWithUserSerializer
-    queryset = Order.objects.prefetch_related(
-        'user', 'orderproductm2m_set', 'products'
-    )
+        # instead of non-existant list object permission
+        if self.request.user.account_type == ACCOUNT_TYPE_STANDARD:
+            queryset = queryset.filter(user=self.request.user)
+
+        queryset = queryset.prefetch_related(
+            'product_relations', 'products', 'user'
+        )
+
+        return queryset
+
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Accepts `{"product_id": <<int>>, "product_count": <<int != 0>>}`
+        """
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        try:
+            DeltaUtil.smart_delta(
+                OrderProductM2M,
+                {
+                    'order': self.get_object(),
+                    'product': Product.objects.get(
+                        id=serializer.validated_data['product_id']
+                    )
+                },
+                'product_count',
+                serializer.validated_data['product_count']
+            )
+        except Product.DoesNotExist:
+            return Response(status=HTTP_404_NOT_FOUND)
+        except (NonPositiveCountException, AttributeError):
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class AdminCloseOrder(APIView):
@@ -295,7 +239,7 @@ class AdminCloseOrder(APIView):
         order = Order.objects.get(id=order_id)
         if order.status == ORDER_STATUS_PAID:
             order.status = ORDER_STATUS_CLOSED
-            order.save()
+            order.save(update_fields=('status',))
             return Response(status=HTTP_204_NO_CONTENT)
 
         return Response(status=HTTP_400_BAD_REQUEST)

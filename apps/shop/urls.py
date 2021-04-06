@@ -9,9 +9,7 @@ from rest_framework import (
 
 from .views import (
     AdminCloseOrder,
-    AdminOrderViewSet,
-    AdminUserOrderViewSet,
-    CartProductView,
+    CartProductsView,
     CategoryViewset,
     CartToOrderView,
     ClearCartView,
@@ -20,28 +18,24 @@ from .views import (
 )
 
 
+app_prefix = 'shop/'
+cart_prefix = 'users/current/cart/'
+orders_prefix = 'shop/orders/'
+
 router = routers.DefaultRouter()
 router.register('products', ProductViewset, 'product')
 router.register('categories', CategoryViewset, 'category')
-router.register('orders', AdminUserOrderViewSet, 'orders')
-router.register('orders', AdminOrderViewSet, 'orders')
-
-urlpatterns = [
-    path('', include(router.urls)),
-    path('orders/<int:order_id>/close/', AdminCloseOrder.as_view())
-]
-
-
-cart_urls = [
-    path('products/', CartProductView.as_view()),
-    path('clear/', ClearCartView.as_view()),
-]
-
 
 order_router = routers.DefaultRouter()
 order_router.register('', OrderViewSet, 'order')
 
-order_urls = [
-    path('make_from_cart/', CartToOrderView.as_view()),
-    path('', include(order_router.urls)),
+urlpatterns = [
+    path(app_prefix + '', include(router.urls)),
+    path(app_prefix + 'orders/<int:order_id>/close/', AdminCloseOrder.as_view()),  # noqa
+
+    path(cart_prefix + 'products/', CartProductsView.as_view()),
+    path(cart_prefix + 'clear/', ClearCartView.as_view()),
+
+    path(orders_prefix + 'make_from_cart/', CartToOrderView.as_view()),
+    path(orders_prefix, include(order_router.urls)),
 ]

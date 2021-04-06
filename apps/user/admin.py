@@ -15,11 +15,11 @@ from apps.shop.models import (
 )
 
 
-class UserProfileInline(admin.TabularInline):
+class UserProfileInline(admin.StackedInline):
     model = UserProfile
 
 
-class CartInline(admin.TabularInline):
+class CartInline(admin.StackedInline):
     model = Cart
 
 

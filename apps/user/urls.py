@@ -1,5 +1,4 @@
 from django.urls import path
-from django.urls.conf import include
 
 from .views import (
     ChangePasswordView,
@@ -10,10 +9,6 @@ from .views import (
     ProfileView,
     UserDetailView,
     UserListView,
-)
-from ..shop.urls import (
-    cart_urls,
-    order_urls,
 )
 
 
@@ -26,8 +21,4 @@ urlpatterns = [
     path('current/change_password/', ChangePasswordView.as_view()),
     path('current/detail/', UserDetailView.as_view()),
     path('', UserListView.as_view()),
-
-    # shop app
-    path('current/cart/', include(cart_urls)),
-    path('current/orders/', include(order_urls)),
 ]

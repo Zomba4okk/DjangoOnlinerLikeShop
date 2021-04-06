@@ -14,6 +14,7 @@ class DeltaUtil:
                     delta_field: str,
                     delta_value):
         """
+        May raise AttributeError\n
         model.objects.get(**identifier).delta_field += delta_value (or create)
         if delta_field == 0: delete
         if delta_field < 0: raise
