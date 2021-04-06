@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
 )
 from rest_framework.views import APIView
 
@@ -34,13 +35,10 @@ from .models import (
     ORDER_STATUS_CLOSED,
 )
 from .serializers import (
-    CartProductCountSerializer,
     CategorySerializer,
-    OrderProductCountSerializer,
     OrderSerializer,
-    OrderWithUserSerializer,
+    ProductCountSerializer,
     ProductSerializer,
-    UserOrdersSerializer,
 )
 from apps.base.permissions import (
     IsReadOnlyPermission,
@@ -82,86 +80,74 @@ class CategoryViewset(ModelViewSet):
 class CartProductView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def put(self, request, *args, **kwargs):
-        '''
-        Accepts `[{"product": <product id>, "product_count": <int >= 0>} * n]`
-        JSON.
-        '''
-        serializer = CartProductCountSerializer(data=request.data, many=True)
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST)
-
-        cart = request.user.cart
-        CartProductM2M.objects.filter(cart=cart).delete()
-
-        cart_product_m2ms = (
-            CartProductM2M(**cart_product_m2m_data, cart=cart)
-            for cart_product_m2m_data
-            in serializer.validated_data
-            if cart_product_m2m_data.get('product_count') > 0
-        )
-        CartProductM2M.objects.bulk_create(cart_product_m2ms)
-
-        return Response(status=HTTP_204_NO_CONTENT)
-
     def patch(self, request, *args, **kwargs):
-        '''
-        Accepts `{"product": <product id>, "product_count": <int >= 0>}` JSON,
-        gets current user's cart.
-
-        if relation cart-product exists:
-            if product_count > 0:
-                set cart.product_count = product_count
-            if product_count == 0:
-                delete relation cart-product
-        else:
-            if product_count > 0:
-                create cart-product relation, set it's product_count
-        '''
-        serializer = CartProductCountSerializer(data=request.data)
+        """
+        Accepts `{"product_id": <<int>>, "product_count": <<int != 0>>}`
+        """
+        serializer = ProductCountSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST)
 
-        cart = request.user.cart
-        new_product_count = serializer.validated_data['product_count']
+        product_count_delta = serializer.validated_data['product_count']
+        if product_count_delta == 0:
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        ###########
 
         try:
-            cart_product_m2m = CartProductM2M.objects.get(
-                product=serializer.validated_data.get('product'),
-                cart=cart
+            product = Product.objects.get(
+                id=serializer.validated_data['product_id']
             )
-            if new_product_count > 0:
-                cart_product_m2m.product_count = new_product_count
-                cart_product_m2m.save()
-                return Response(status=HTTP_204_NO_CONTENT)
-            else:
-                cart_product_m2m.delete()
-                return Response(status=HTTP_204_NO_CONTENT)
+        except Product.DoesNotExist:
+            return Response(status=HTTP_404_NOT_FOUND)
 
-        except CartProductM2M.DoesNotExist:
-            if new_product_count > 0:
-                CartProductM2M(
-                    **{'cart': cart, **serializer.validated_data}
-                ).save()
+        ###########
+
+        cart = request.user.cart
+        try:
+            cart_product_m2m = cart.product_relations.get(product=product)
+            cart_product_m2m.product_count += product_count_delta
+
+            if cart_product_m2m.product_count < 0:
+                return Response(status=HTTP_400_BAD_REQUEST)
+
+            elif cart_product_m2m.product_count > 0:
+                cart_product_m2m.save(update_fields=('product_count',))
+
+            elif cart_product_m2m.product_count == 0:
+                cart_product_m2m.delete()
 
             return Response(status=HTTP_204_NO_CONTENT)
 
+        except CartProductM2M.DoesNotExist:
+            if product_count_delta > 0:
+                cart.product_relations.create(
+                    product=product, product_count=product_count_delta
+                )
+                return Response(status=HTTP_204_NO_CONTENT)
+            else:
+                return Response(status=HTTP_400_BAD_REQUEST)
+
     def get(self, request, *args, **kwargs):
+        """
+        Returns `[{"product_id": <<int>>, "product_count": <<int > 0>>} * n]`
+        """
         queryset = CartProductM2M.objects \
             .filter(cart=request.user.cart) \
             .select_related('product')
-        return Response(CartProductCountSerializer(queryset, many=True).data)
+        return Response(ProductCountSerializer(queryset, many=True).data)
 
 
 class CartToOrderView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, *args, **kwargs):
-
-        cart = request.user.cart
-        cart_product_m2ms = CartProductM2M.objects \
-            .filter(cart=cart) \
-            .select_related('product')
+    def post(self, request, *args, **kwargs):
+        """
+        Creates a new Order belonging to the current User, with products and
+        product counts copied from User's Cart; Clears User's Cart.
+        """
+        cart_product_m2ms = request.user.cart.product_relations \
+            .select_related('product').all()
         if cart_product_m2ms.exists():
             order = Order(user=request.user)
             order.save()
@@ -187,7 +173,10 @@ class CartToOrderView(APIView):
 class ClearCartView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
+        """
+        Clears current User's Cart
+        """
         cart = request.user.cart
         cart.products.clear()
         return Response(status=HTTP_204_NO_CONTENT)
@@ -202,16 +191,16 @@ class OrderViewSet(ListModelMixin,
     permission_classes = (IsAuthenticated,)
 
     serializer_class = OrderSerializer
-    serializer_action_classes = {
-        'update': OrderProductCountSerializer,
-        'partial_update': OrderProductCountSerializer,
-    }
+    # serializer_action_classes = {
+    #     'update': OrderProductCountSerializer,
+    #     'partial_update': OrderProductCountSerializer,
+    # }
     queryset = Order.objects.all()
 
     def get_queryset(self):
         return super().get_queryset() \
             .filter(user=self.request.user) \
-            .prefetch_related('orderproductm2m_set', 'products')
+            .prefetch_related('product_relations', 'products', 'user')
 
     def get_order_to_update(self):
         order = self.get_object()
@@ -290,7 +279,7 @@ class AdminUserOrderViewSet(ListModelMixin,
                             GenericViewSet):
     permission_classes = (IsModeratorPermission | IsAdminPermission,)
 
-    serializer_class = UserOrdersSerializer
+    # serializer_class = UserOrdersSerializer
     queryset = User.objects.prefetch_related(
         'orders__products', 'orders__orderproductm2m_set'
     )
@@ -302,7 +291,7 @@ class AdminOrderViewSet(RetrieveModelMixin,
                         GenericViewSet):
     permission_classes = (IsModeratorPermission | IsAdminPermission,)
 
-    serializer_class = OrderWithUserSerializer
+    # serializer_class = OrderWithUserSerializer
     queryset = Order.objects.prefetch_related(
         'user', 'orderproductm2m_set', 'products'
     )
@@ -311,7 +300,7 @@ class AdminOrderViewSet(RetrieveModelMixin,
 class AdminCloseOrder(APIView):
     permission_classes = (IsModeratorPermission | IsAdminPermission,)
 
-    def get(self, request, order_id, *arge, **kwargs):
+    def patch(self, request, order_id, *arge, **kwargs):
         order = Order.objects.get(id=order_id)
         if order.status == ORDER_STATUS_PAID:
             order.status = ORDER_STATUS_CLOSED

@@ -69,8 +69,10 @@ class CartProductM2M(models.Model):
         unique_together = (('cart', 'product'),)
         verbose_name = 'product'
 
-    cart = models.ForeignKey(to=Cart, on_delete=models.CASCADE)
-    product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
+    cart = models.ForeignKey(to=Cart, on_delete=models.CASCADE,
+                             related_name='product_relations')
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE,
+                                related_name='cart_relations')
     product_count = models.IntegerField()
 
     def __str__(self):
@@ -82,6 +84,8 @@ class OrderProductM2M(models.Model):
         unique_together = (('order', 'product'),)
         verbose_name = 'product'
 
-    order = models.ForeignKey(to=Order, on_delete=models.CASCADE)
-    product = models.ForeignKey(to=Product, on_delete=models.CASCADE)
+    order = models.ForeignKey(to=Order, on_delete=models.CASCADE,
+                              related_name='product_relations')
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE,
+                                related_name='order_relations')
     product_count = models.IntegerField()
