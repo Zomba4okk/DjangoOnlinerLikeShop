@@ -1,0 +1,2 @@
+class NonPositiveCountException(Exception):
+    pass

@@ -19,6 +19,9 @@ from rest_framework.views import APIView
 
 from django_filters import rest_framework as rf_filters
 
+from .exceptions import (
+    NonPositiveCountException,
+)
 from .filters import (
     CategoryFilterSet,
     ProductFilterSet,
@@ -39,6 +42,9 @@ from .serializers import (
     OrderSerializer,
     ProductCountSerializer,
     ProductSerializer,
+)
+from .utils import (
+    DeltaUtil,
 )
 from apps.base.permissions import (
     IsReadOnlyPermission,
@@ -88,10 +94,6 @@ class CartProductView(APIView):
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST)
 
-        product_count_delta = serializer.validated_data['product_count']
-        if product_count_delta == 0:
-            return Response(status=HTTP_400_BAD_REQUEST)
-
         ###########
 
         try:
@@ -101,32 +103,21 @@ class CartProductView(APIView):
         except Product.DoesNotExist:
             return Response(status=HTTP_404_NOT_FOUND)
 
+        cart = request.user.cart
+
         ###########
 
-        cart = request.user.cart
         try:
-            cart_product_m2m = cart.product_relations.get(product=product)
-            cart_product_m2m.product_count += product_count_delta
+            DeltaUtil.smart_delta(
+                CartProductM2M,
+                {'cart': cart, 'product': product},
+                'product_count',
+                serializer.validated_data['product_count']
+            )
+        except (NonPositiveCountException, AttributeError):
+            return Response(status=HTTP_400_BAD_REQUEST)
 
-            if cart_product_m2m.product_count < 0:
-                return Response(status=HTTP_400_BAD_REQUEST)
-
-            elif cart_product_m2m.product_count > 0:
-                cart_product_m2m.save(update_fields=('product_count',))
-
-            elif cart_product_m2m.product_count == 0:
-                cart_product_m2m.delete()
-
-            return Response(status=HTTP_204_NO_CONTENT)
-
-        except CartProductM2M.DoesNotExist:
-            if product_count_delta > 0:
-                cart.product_relations.create(
-                    product=product, product_count=product_count_delta
-                )
-                return Response(status=HTTP_204_NO_CONTENT)
-            else:
-                return Response(status=HTTP_400_BAD_REQUEST)
+        return Response(status=HTTP_204_NO_CONTENT)
 
     def get(self, request, *args, **kwargs):
         """

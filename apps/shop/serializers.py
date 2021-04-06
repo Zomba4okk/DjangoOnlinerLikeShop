@@ -24,6 +24,16 @@ class ProductCountSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     product_count = serializers.IntegerField()
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        if attrs['product_count'] == 0:
+            raise serializers.ValidationError(
+                'product_count must not be == 0'
+            )
+
+        return attrs
+
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
