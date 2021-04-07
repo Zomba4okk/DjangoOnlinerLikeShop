@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django_filters',
     'mptt',
     'rest_framework',
+    'tinymce',
 
     'apps.shop',
     'apps.user',

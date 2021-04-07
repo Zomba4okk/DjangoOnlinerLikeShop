@@ -5,6 +5,8 @@ from django.db import models
 
 from mptt import models as mpttmodels
 
+from tinymce import HTMLField
+
 
 ORDER_STATUS_INCOMPLETE = 'incomplete'
 ORDER_STATUS_PAID = 'paid'
@@ -33,8 +35,7 @@ class Product(models.Model):
     category = models.ForeignKey(to=Category, on_delete=models.SET_NULL,
                                  null=True, blank=True)
     name = models.CharField(max_length=64)
-    description = models.CharField(max_length=256)
-    characteristics = models.CharField(max_length=256)
+    description = HTMLField('description')
     price = models.DecimalField(
         max_digits=10, decimal_places=2,
         validators=(MinValueValidator(Decimal('0.01')),)
