@@ -232,7 +232,7 @@ class OrderViewSet(ListModelMixin,
         return Response(status=HTTP_204_NO_CONTENT)
 
 
-class AdminCloseOrder(APIView):
+class AdminCloseOrderView(APIView):
     permission_classes = (IsModeratorPermission | IsAdminPermission,)
 
     def patch(self, request, order_id, *arge, **kwargs):

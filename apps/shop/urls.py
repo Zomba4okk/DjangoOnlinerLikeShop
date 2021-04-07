@@ -8,7 +8,7 @@ from rest_framework import (
 )
 
 from .views import (
-    AdminCloseOrder,
+    AdminCloseOrderView,
     CartProductsView,
     CategoryViewset,
     CartToOrderView,
@@ -31,7 +31,7 @@ order_router.register('', OrderViewSet, 'order')
 
 urlpatterns = [
     path(app_prefix + '', include(router.urls)),
-    path(app_prefix + 'orders/<int:order_id>/close/', AdminCloseOrder.as_view()),  # noqa
+    path(app_prefix + 'orders/<int:order_id>/close/', AdminCloseOrderView.as_view()),  # noqa
 
     path(cart_prefix + 'products/', CartProductsView.as_view()),
     path(cart_prefix + 'clear/', ClearCartView.as_view()),
