@@ -1,2 +1,11 @@
-class NonPositiveCountException(Exception):
-    pass
+from rest_framework.exceptions import (
+    APIException,
+)
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST,
+)
+
+
+class NonPositiveCountException(APIException):
+    status_code = HTTP_400_BAD_REQUEST
+    default_detail = 'resulting count must be positive'

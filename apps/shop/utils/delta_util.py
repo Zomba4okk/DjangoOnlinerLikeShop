@@ -23,16 +23,17 @@ class DeltaUtil:
             model_instance = model.objects.get(**identifier)
             new_delta_field_value = \
                 getattr(model_instance, delta_field) + delta_value
+
+            if new_delta_field_value < 0:
+                raise NonPositiveCountException
+
             setattr(
                 model_instance,
                 delta_field,
                 new_delta_field_value
             )
 
-            if new_delta_field_value < 0:
-                raise NonPositiveCountException
-
-            elif new_delta_field_value > 0:
+            if new_delta_field_value > 0:
                 model_instance.save(update_fields=(delta_field,))
 
             elif new_delta_field_value == 0:

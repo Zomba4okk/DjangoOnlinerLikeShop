@@ -1,3 +1,7 @@
+from django.shortcuts import (
+    get_object_or_404,
+)
+
 from rest_framework.viewsets import (
     GenericViewSet,
     ModelViewSet,
@@ -13,15 +17,11 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
 )
 from rest_framework.views import APIView
 
 from django_filters import rest_framework as rf_filters
 
-from .exceptions import (
-    NonPositiveCountException,
-)
 from .filters import (
     CategoryFilterSet,
     ProductFilterSet,
@@ -102,16 +102,17 @@ class CartProductsView(APIView):
                 CartProductM2M,
                 {
                     'cart': request.user.cart,
-                    'product': Product.objects.get(
-                        id=serializer.validated_data['product_id']
+                    'product': get_object_or_404(
+                        Product, id=serializer.validated_data['product_id']
                     )
+                    # Product.objects.get(
+                    #     id=serializer.validated_data['product_id']
+                    # )
                 },
                 'product_count',
                 serializer.validated_data['product_count']
             )
-        except Product.DoesNotExist:
-            return Response(status=HTTP_404_NOT_FOUND)
-        except (NonPositiveCountException, AttributeError):
+        except AttributeError:
             return Response(status=HTTP_400_BAD_REQUEST)
 
         return Response(status=HTTP_204_NO_CONTENT)
@@ -217,16 +218,17 @@ class OrderViewSet(ListModelMixin,
                 OrderProductM2M,
                 {
                     'order': self.get_object(),
-                    'product': Product.objects.get(
-                        id=serializer.validated_data['product_id']
+                    'product': get_object_or_404(
+                        Product, id=serializer.validated_data['product_id']
                     )
+                    # Product.objects.get(
+                    #     id=serializer.validated_data['product_id']
+                    # )
                 },
                 'product_count',
                 serializer.validated_data['product_count']
             )
-        except Product.DoesNotExist:
-            return Response(status=HTTP_404_NOT_FOUND)
-        except (NonPositiveCountException, AttributeError):
+        except AttributeError:
             return Response(status=HTTP_400_BAD_REQUEST)
 
         return Response(status=HTTP_204_NO_CONTENT)
