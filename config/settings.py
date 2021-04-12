@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'mptt',
     'rest_framework',
     'tinymce',
+    'nested_admin',
 
     'apps.shop',
     'apps.user',
