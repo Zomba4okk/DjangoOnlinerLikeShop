@@ -119,7 +119,7 @@ class CartProductsView(APIView):
         Returns `[{"product_id": <<int>>, "product_count": <<int > 0>>} * n]`
         """
         queryset = CartProductM2M.objects \
-            .filter(cart=request.user.cart) \
+            .filter(cart__id=request.user.cart.id) \
             .select_related('product')
         return Response(ProductCountSerializer(queryset, many=True).data)
 
