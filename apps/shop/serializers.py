@@ -21,8 +21,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ProductCountSerializer(serializers.Serializer):
 
-    product_id = serializers.IntegerField()
-    product_count = serializers.IntegerField()
+    product_id = serializers.IntegerField(required=True)
+    product_count = serializers.IntegerField(required=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
 
     def validate(self, attrs):
