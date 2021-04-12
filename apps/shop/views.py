@@ -105,9 +105,6 @@ class CartProductsView(APIView):
                     'product': get_object_or_404(
                         Product, id=serializer.validated_data['product_id']
                     )
-                    # Product.objects.get(
-                    #     id=serializer.validated_data['product_id']
-                    # )
                 },
                 'product_count',
                 serializer.validated_data['product_count']
@@ -188,7 +185,6 @@ class OrderViewSet(ListModelMixin,
     serializer_class = OrderSerializer
     serializer_action_classes = {
         'partial_update': ProductCountSerializer,
-        'create': ProductCountSerializer,
     }
     queryset = Order.objects.all()
 
@@ -200,7 +196,7 @@ class OrderViewSet(ListModelMixin,
             queryset = queryset.filter(user=self.request.user)
 
         queryset = queryset.prefetch_related(
-            'product_relations', 'products', 'user'
+            'product_relations__product', 'user'
         )
 
         return queryset
@@ -221,9 +217,6 @@ class OrderViewSet(ListModelMixin,
                     'product': get_object_or_404(
                         Product, id=serializer.validated_data['product_id']
                     )
-                    # Product.objects.get(
-                    #     id=serializer.validated_data['product_id']
-                    # )
                 },
                 'product_count',
                 serializer.validated_data['product_count']
