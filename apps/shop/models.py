@@ -74,7 +74,7 @@ class CartProductM2M(models.Model):
                              related_name='product_relations')
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE,
                                 related_name='cart_relations')
-    product_count = models.IntegerField()
+    product_count = models.IntegerField(validators=(MinValueValidator(1),))
 
     def __str__(self):
         return f'{self.cart} - {self.product} - {self.product_count}'

@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
+import nested_admin
+
 from .forms import (
     UserChangeForm,
     UserCreationForm,
@@ -12,18 +14,25 @@ from .models import (
 )
 from apps.shop.models import (
     Cart,
+    CartProductM2M,
 )
 
 
-class UserProfileInline(admin.StackedInline):
+class UserProfileInline(nested_admin.NestedStackedInline):
     model = UserProfile
 
 
-class CartInline(admin.StackedInline):
+class CartProductM2MInline(nested_admin.NestedStackedInline):
+    model = CartProductM2M
+    extra = 1
+
+
+class CartInline(nested_admin.NestedStackedInline):
     model = Cart
+    inlines = [CartProductM2MInline]
 
 
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(nested_admin.NestedModelAdmin, BaseUserAdmin):
     model = User
 
     inlines = [UserProfileInline, CartInline]
