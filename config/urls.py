@@ -25,4 +25,5 @@ urlpatterns = [
 
     path('users/', include('apps.user.urls')),
     path('shop/', include('apps.shop.urls')),
+    path('news/', include('apps.news.urls')),
 ]

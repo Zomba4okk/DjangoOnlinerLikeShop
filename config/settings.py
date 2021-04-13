@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'tinymce',
     'nested_admin',
 
+    'apps.news',
     'apps.shop',
     'apps.user',
 ]
