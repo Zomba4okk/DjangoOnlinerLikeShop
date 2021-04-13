@@ -231,7 +231,8 @@ class AdminCloseOrderView(APIView):
     permission_classes = (IsModeratorPermission | IsAdminPermission,)
 
     def patch(self, request, order_id, *arge, **kwargs):
-        order = Order.objects.get(id=order_id)
+        order = get_object_or_404(Order, id=order_id)
+
         if order.status == ORDER_STATUS_PAID:
             order.status = ORDER_STATUS_CLOSED
             order.save(update_fields=('status',))
