@@ -10,7 +10,7 @@ from .models import (
 class IsOwnerPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         try:
-            return obj.user.id == request.user.id
+            return obj.user_id == request.user.id
         except AttributeError:
             return False
 

@@ -195,9 +195,10 @@ class OrderViewSet(ListModelMixin,
         if self.request.user.account_type == ACCOUNT_TYPE_STANDARD:
             queryset = queryset.filter(user=self.request.user)
 
-        queryset = queryset.prefetch_related(
-            'product_relations__product', 'user'
-        )
+        queryset = queryset.prefetch_related('product_relations__product')
+
+        if self.action == 'list':
+            queryset = queryset.prefetch_related('user')
 
         return queryset
 
