@@ -1,3 +1,10 @@
+from django.contrib.auth.password_validation import (
+    validate_password,
+)
+from django.core.exceptions import (
+    ValidationError,
+)
+
 from rest_framework import serializers
 
 from .models import (
@@ -20,6 +27,22 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ('email', 'password', 'user_profile')
 
     user_profile = UserProfileSerializer(allow_null=True, required=False)
+
+    def validate(self, attrs):
+        user = User(attrs['email'], attrs['password'])
+        try:
+            validate_password(attrs['password'], user)
+        except ValidationError:
+            raise serializers.ValidationError
+
+        return super().validate(attrs)
+
+    def save(self):
+        return User.objects.create(
+            email=self.validated_data['email'],
+            password=self.validated_data['password'],
+            user_profile=self.validated_data.get('user_profile', {})
+        )
 
 
 class ChangePasswordSerializer(serializers.Serializer):

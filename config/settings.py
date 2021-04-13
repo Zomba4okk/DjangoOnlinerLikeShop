@@ -42,8 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_filters',
+    'mptt',
     'rest_framework',
+    'tinymce',
+    'nested_admin',
 
+    'apps.shop',
     'apps.user',
 ]
 
@@ -115,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'user.User'
 AUTHENTICATION_BACKENDS = ['apps.user.backends.AuthBackend']
-USER_ACTIVATION_URI = 'http://localhost:8000/user/activate/'
+USER_ACTIVATION_URI = 'http://localhost:8000/users/activate/'
 # key\/ must be 32 bytes
 USER_ACTIVATION_ENCRYPTION_KEY = env('USER_ACTIVATION_ENCRYPTION_KEY')
 USER_ACTIVATION_EXPIRATION_PERIOD_IN_SECONDS = 1800  # 30 mins
