@@ -42,7 +42,6 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ('order_id', 'user_id', 'user_email', 'status', 'products')
 
     order_id = serializers.IntegerField(source='id')
-    user_id = serializers.IntegerField(source='user.id')
     user_email = serializers.CharField(source='user.email')
 
     products = ProductCountSerializer(
