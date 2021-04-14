@@ -16,7 +16,7 @@ class NewsImageInline(admin.StackedInline):
     extra = 1
 
     def image_tag(self, obj):
-        return ImageTagUtil.get_image_tag(obj.image.url)
+        return ImageTagUtil.get_image_tag(obj.image.url, "500", "300")
 
 
 class NewsAdmin(admin.ModelAdmin):
