@@ -1,12 +1,12 @@
 from django.contrib import admin
-from django.utils.html import (
-    format_html,
-)
 
 from .models import (
     EditingHistoryEntry,
     News,
     NewsImage,
+)
+from apps.base.utils import (
+    ImageTagUtil,
 )
 
 
@@ -32,16 +32,21 @@ class NewsImageInline(admin.StackedInline):
     extra = 1
 
     def image_tag(self, obj):
-        return format_html('<img src="{url}"/>',
-                           url=obj.image.url)
+        return ImageTagUtil.get_image_tag(obj.image.url)
 
 
 class NewsAdmin(admin.ModelAdmin):
     model = News
+    fields = ('title', 'description', 'content', 'main_image',
+              'main_image_tag')
+    readonly_fields = ('main_image_tag',)
     inlines = (
         NewsImageInline,
         EditingHistoryEntryInline
     )
+
+    def main_image_tag(self, obj):
+        return ImageTagUtil.get_image_tag(obj.main_image.url)
 
 
 admin.site.register(News, NewsAdmin)
