@@ -2,6 +2,9 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.generics import (
+    ListAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -15,10 +18,15 @@ from .models import (
     User,
     UserProfile,
 )
+from .permissions import (
+    IsAdminPermission,
+    IsModeratorPermission,
+)
 from .serializers import (
     ChangePasswordSerializer,
-    RegistrationSerializer,
     UserDetailSerializer,
+    RegistrationSerializer,
+    FullUserDetailSerializer,
     UserProfileSerializer,
 )
 from .utils import (
@@ -53,22 +61,7 @@ class RegisterView(APIView):
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(
-            serializer.data['email'],
-            serializer.data['password'],
-            save=False
-        )
-
-        try:
-            validate_password(serializer.data['password'], user)
-        except ValidationError as e:
-            return Response({"password_validation_errors": e},
-                            status=HTTP_400_BAD_REQUEST)
-
-        user.save()
-
-        user_profile_data = serializer.data['user_profile'] or {}
-        UserProfile(user=user, **(user_profile_data)).save()
+        user = serializer.save()
 
         EmailUtil.send_activation_email(user, raise_exception=False)
 
@@ -92,7 +85,7 @@ class ActivateUserView(APIView):
 
 
 class DeleteUserView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def delete(self, request, *args, **kwargs):
         user = request.user
@@ -103,7 +96,7 @@ class DeleteUserView(APIView):
 
 
 class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         return Response(
@@ -123,7 +116,7 @@ class ProfileView(APIView):
 
 
 class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def put(self, request, *args, **kwargs):
         user: User = request.user
@@ -149,7 +142,14 @@ class ChangePasswordView(APIView):
 
 
 class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        return Response(UserDetailSerializer(request.user).data)
+        return Response(FullUserDetailSerializer(request.user).data)
+
+
+class UserListView(ListAPIView):
+    permission_classes = (IsModeratorPermission | IsAdminPermission,)
+
+    queryset = User.objects.all()
+    serializer_class = UserDetailSerializer
