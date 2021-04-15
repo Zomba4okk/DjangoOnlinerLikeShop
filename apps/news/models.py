@@ -1,4 +1,12 @@
-from django.db import models
+from django.contrib.admin.models import (
+    LogEntry,
+)
+from django.contrib.contenttypes.fields import (
+    GenericRelation,
+)
+from django.db import (
+    models,
+)
 
 from tinymce import (
     HTMLField,
@@ -12,7 +20,10 @@ class News(models.Model):
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
     content = HTMLField()
-    main_image = models.ImageField(upload_to='news_images/')
+    main_image = models.ImageField(
+        upload_to='news_images/', null=True, blank=True
+    )
+    edit_logs = GenericRelation(LogEntry)
 
     def __str__(self):
         return f'News article: {self.title}'
