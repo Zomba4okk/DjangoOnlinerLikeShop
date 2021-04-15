@@ -29,12 +29,12 @@ class NewsDetailSerializer(ModelSerializer):
     class Meta:
         model = News
         fields = (
-            'news_id', 'title', 'description', 'main_image', 'images',
-            'edit_logs'
+            'news_id', 'title', 'description', 'content', 'main_image',
+            'images', 'edit_logs',
         )
 
-    news_id = IntegerField(source='id')
-    images = NewsImageSerializer(many=True)
+    news_id = IntegerField(source='id', read_only=True)
+    images = NewsImageSerializer(many=True, read_only=True)
     edit_logs = LogEntrySerializer(many=True, read_only=True)
 
 
