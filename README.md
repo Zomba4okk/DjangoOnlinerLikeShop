@@ -1,5 +1,5 @@
 ## DjangoOnlinerLikeShop (For iTechArt student labs)
-The custom copy of [onliner.by.](https://www.onliner.by/) 
+Backend server of the custom copy of [onliner.by.](https://www.onliner.by/) 
 
 ## Results
 The work on the project was started on **25.02.2021** and finished on **17.04.2021**.
